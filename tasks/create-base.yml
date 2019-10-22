@@ -1,0 +1,47 @@
+---
+platform: linux
+
+inputs:
+  - name: pipeline-resources
+  - name: govc
+  - name: autounattend
+  - name: iso
+
+params:
+  vcenter_ca_certs: ((vcenter-ca-certs))
+  vcenter_url: ((vcenter-url))
+  vcenter_username: ((vcenter-username))
+  vcenter_password: ((vcenter-password))
+  vcenter_datacenter: ((vcenter-datacenter))
+
+  base_vm_name: ((base-vm-name))
+  vm_folder: ((vm-folder))
+  vm_datastore: ((vm-datastore))
+  vm_host: ((vm-host))
+  vm_cpu: ((vm-cpu))
+  vm_network: ((vm-network))
+  vm_disk_gb: ((vm-disk-gb))
+  vm_memory_mb: ((vm-memory-mb))
+  vm_guest_os_id: ((vm-guest-os-id))
+  vm_net_adapter: ((vm-net-adapter))
+  esxi_version: ((esxi-version))
+  firmware_type: ((firmware-type))
+  disk_controller_type: ((disk-controller-type))
+  iso_datastore: ((iso-datastore))
+  iso_folder: ((iso-folder))
+  vm_resource_pool: ((vm-resource-pool))
+  vm_cluster: ((vm-cluster))
+
+  operating_system_name: ((operating-system-name))
+  product_key: ((product-key))
+  ip_address: ((ip-address))
+  language: ((language))
+  gateway_address: ((gateway-address))
+  dns_address: ((dns-address))
+  admin_password: ((admin-password))
+	oobe_unattend_uri: ((oobe-unattend-uri))
+	vmware_tools_uri: ((vmware-tools-uri))
+	windows_update_module_uri: ((windows-update-module-uri))
+    
+run:
+  path: pipeline-resources/tasks/create-base.sh

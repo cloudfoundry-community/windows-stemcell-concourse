@@ -1,0 +1,28 @@
+---
+platform: linux
+
+inputs:
+  - name: pipeline-resources
+  - name: govc
+  - name: stembuild
+
+params:
+  vcenter_url: ((vcenter-url))
+  vcenter_username: ((vcenter-username))
+  vcenter_password: ((vcenter-password))
+  vcenter_datacenter: ((vcenter-datacenter))
+  vcenter_ca_certs: ((vcenter-ca-certs))
+
+  base_vm_name: ((base-vm-name))
+  vm_folder: ((vm-folder))
+  vm_datastore: ((vm-datastore))
+  vm_host: ((vm-host))
+  vm_network: ((vm-network))
+  vm_cpu: ((vm-cpu))
+  vm_memory_mb: ((vm-memory-mb))
+  vm_resource_pool: ((vm-resource-pool))
+  vm_cluster: ((vm-cluster))
+
+run:
+  path: pipeline-resources/tasks/clone-base.sh
+  

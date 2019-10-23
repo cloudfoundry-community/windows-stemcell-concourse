@@ -25,4 +25,3 @@ params:
 
 run:
   path: pipeline-resources/tasks/clone-base.sh
-  

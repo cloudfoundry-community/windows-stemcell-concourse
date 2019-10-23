@@ -124,7 +124,7 @@ function parseStembuildVersion() {
 #######################################
 #       Install Dependencies
 #######################################
-apt-get update
+#apt-get update
 #sudo apt-get install software-properties-common
 #add-apt-repository universe
 command -v 7z >/dev/null 2>&1 || install7Zip

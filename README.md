@@ -69,7 +69,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
 ### Adding the pipeline
 
-  1. You'll need 2 files from this repo, `pipeline.yml` and `vars-min.yml`. You can either clone the repo `git clone https://github.com/cloudfoundry-community/XXXXXXXXXX` or just grab the raw content.
+  1. You'll need 2 files from this repo, `pipeline.yml` and `vars-min.yml`. You can either clone the repo `git clone https://github.com/cloudfoundry-community/windows-stemcell-concourse` or just grab the raw content.
 
   1. The `vars-min.yml` file will feed values to the pipeline. This yml is a minimum to get started, read below for additional values.
 
@@ -139,3 +139,7 @@ The new release of stembuild is the trigger of the pipeline. Specifically the `u
 There are two ways to watch for a new stembuild release. Pivotal customers can have concourse watch [Pivotal Stemcells product page](https://network.pivotal.io/products/stemcells-windows-server) for a new version, or non-Pivotal customers can have concourse watch the [GitHub> releases](https://github.com/cloudfoundry-incubator/stembuild/releases) for a new version. If you would like to make the pipeline run automatically when a new release is posted, uncomment `trigger: true` in the `update-base` task.
 
 More details about monthly stemcell upgrade can be found in the [creating vsphere stemcell with stembuild](https://docs.pivotal.io/pivotalcf/2-6/windows/create-vsphere-stemcell-automatically.html#upgrade-stemcell) documentation.
+
+## Helps & Docs
+
+There is a holder powershell file named `commands.ps1`. This has example scripts for setting up an S3 bucket in AWS using their powershell commands, example concourse command to the set the pipeline, and an example script to retrieve VCenter certificate.

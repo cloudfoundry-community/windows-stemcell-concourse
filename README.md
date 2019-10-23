@@ -1,4 +1,4 @@
-# Cloud Foundry Windows Stemcell Automation
+# Windows Stemcell Automation
 
 Provides tasks to create a Windows stemcell for Cloud Foundry, in VSphere. The tasks are intended to be open and extensible, as bash scripts. While life becomes a little more managable using [concourse](https://concourse-ci.org) for automation of these tasks, everything is arragned in a way that you could manually run them or plug them in to some other automation tool. The job of each task follows Pivotal's reccomended way of creating a base image, cloning it, and running their stembuild tool on it. Read more about "Creating a Windows Stemcell for vSphere Using stembuild" in [their docs](https://docs.pivotal.io/pivotalcf/windows).
 
@@ -141,4 +141,4 @@ More details about monthly stemcell upgrade can be found in the [creating vspher
 
 ## Helps & Docs
 
-There is a holder powershell file named `commands.ps1`. This has example scripts for setting up an S3 bucket in AWS using their powershell commands, example concourse command to the set the pipeline, and an example script to retrieve VCenter certificate.
+There is a helper powershell file named `commands.ps1`. This has example scripts for setting up an S3 bucket in AWS (using their powershell commands), example concourse command to set the pipeline, and an example script to retrieve VCenter certificate.

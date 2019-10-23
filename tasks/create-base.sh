@@ -16,7 +16,6 @@ THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 [[ -z "${vcenter_username}" ]] && (echo "vcenter_username is a required value" && exit 1)
 [[ -z "${vcenter_password}" ]] && (echo "vcenter_password is a required value" && exit 1)
 [[ -z "${vcenter_datacenter}" ]] && (echo "vcenter_datacenter is a required value" && exit 1)
-[[ -z "${vcenter_ca_certs}" ]] && vcenter_ca_certs=""
 
 [[ -z "${base_vm_name}" ]] && (echo "base_vm_name is a required value" && exit 1)
 
@@ -34,10 +33,8 @@ THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 [[ -z "${disk_controller_type}" ]] && disk_controller_type="lsilogic-sas"
 [[ -z "${iso_datastore}" ]] && (echo "iso_datastore is a required value" && exit 1)
 [[ -z "${iso_folder}" ]] && iso_folder="Win-Stemcell-ISO"
-[[ -z "${vm_resource_pool}" ]] && vm_resource_pool=""
 
 [[ -z "${operating_system_name}" ]] && (echo "operating_system_name is a required value" && exit 1) #"Windows Server 2019 SERVERSTANDARDCORE"
-[[ -z "${product_key}" ]] && product_key=""
 [[ -z "${language}" ]] && language="en-US"
 [[ -z "${ip_address}" ]] && (echo "ip_address is a required value" && exit 1)
 [[ -z "${gateway_address}" ]] && (echo "gateway_address is a required value" && exit 1)

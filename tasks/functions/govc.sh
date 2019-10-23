@@ -560,7 +560,7 @@ export GOVC_URL=${vcenter_url}
 export GOVC_USERNAME=${vcenter_username}
 export GOVC_PASSWORD=${vcenter_password}
 
-if [[ ${use_cert} = "true" ]]; then
+if [[ "${use_cert}" == "true" ]]; then
 	export GOVC_INSECURE=0
 	export GOVC_TLS_CA_CERTS=${cert_path}
 else

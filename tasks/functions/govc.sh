@@ -191,9 +191,14 @@ function getPowerState(){
 function powerOnVM(){
 	local vm_ipath="${1}"
 
-	if ! ${govc} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true; then
-		writeErr "Could not power on VM at ${vm_ipath}"
-		return 1
+	if ! ret=$(${govc} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true 2>&1); then
+		if [[ "${ret}" == *"current state (Powered on)"* ]]; then
+			return 0
+		else
+			writeErr "${info}"
+			writeErr "Could not power on VM at ${vm_ipath}"
+			return 1
+		fi
 	fi
 
 	return 0

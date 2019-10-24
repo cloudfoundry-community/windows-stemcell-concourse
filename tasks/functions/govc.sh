@@ -80,6 +80,11 @@ function insertFloppy(){
 		return 1
 	fi
 
+	if ! ${govc} device.floppy.add -vm="${vm_name}"; then
+		writeErr "Could not add floppy drive to ${vm_name}"
+		return 1
+	fi
+
 	if ! ${govc} device.floppy.insert -vm="${vm_name}" -ds="${datastore_name}" "${floppy_img_ds_path}"; then
 		writeErr "Could not insert floppy file ${floppy_img_ds_path} into ${vm_name}"
 		return 1

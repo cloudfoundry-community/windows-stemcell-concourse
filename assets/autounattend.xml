@@ -51,10 +51,6 @@
                 </OSImage>
             </ImageInstall>
             <UserData>
-                <ProductKey>
-                    <WillShowUI>OnError</WillShowUI>
-                    <Key>{{PRODUCT_KEY}}</Key>
-                </ProductKey>
                 <AcceptEula>true</AcceptEula>
             </UserData>
         </component>

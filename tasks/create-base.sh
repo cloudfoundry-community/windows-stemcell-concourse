@@ -142,6 +142,7 @@ if ! mkisofs -quiet \
   -boot-load-seg 0x07C0 \
   -boot-load-size 8 \
   -udf \
+	-allow-limited-size \
   -input-charset UTF-8 \
   -D -N -R -joliet -relaxed-filenames \
   -V Windows \

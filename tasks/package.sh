@@ -16,7 +16,7 @@ THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 [[ -z "${vcenter_username}" ]] && (echo "vcenter_username is a required value" && exit 1)
 [[ -z "${vcenter_password}" ]] && (echo "vcenter_password is a required value" && exit 1)
 [[ -z "${vcenter_datacenter}" ]] && (echo "vcenter_datacenter is a required value" && exit 1)
-[[ -z "${vcenter_ca_certs}" ]] && vcenter_ca_certs=""
+[[ -z "${vcenter_ca_certs}" ]] && (echo "vcenter_ca_certs is a required value" && exit 1)
 
 [[ -z "${vm_folder}" ]] && (echo "vm_folder is a required value" && exit 1)
 

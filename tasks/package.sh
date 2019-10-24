@@ -51,11 +51,11 @@ if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER
 # shellcheck source=./functions/govc.sh
 source "${THIS_FOLDER}/functions/govc.sh" \
   -govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-  -url ${vcenter_url} \
-  -username ${vcenter_username} \
-  -password ${vcenter_password} \
-	-use-cert ${use_cert} \
-	-cert-path ${cert_path}
+  -url "${vcenter_url}" \
+  -username "${vcenter_username}" \
+  -password "${vcenter_password}" \
+	-use-cert "${use_cert}" \
+	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
 
 #######################################
 #       Begin task

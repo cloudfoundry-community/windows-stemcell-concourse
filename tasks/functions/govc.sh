@@ -516,6 +516,8 @@ govc=""
 cert_path=""
 use_cert=""
 
+echo "Initializing govc"
+
 while [ $# -ne 0 ]
 do
 	name="$1"
@@ -550,11 +552,14 @@ do
 done
 
 if [ -z ${govc} ]; then
-	echo "govc binary not found"
+	writeErr "govc binary not found"
 	exit 1
 fi
 
-command -v ${govc} >/dev/null || (echo "govc binary invalid" && exit 1)
+if ! command -v ${govc} >/dev/nulll; then
+	writeErr "govc binary invalid"
+	exit 1
+fi
 
 export GOVC_URL=${vcenter_url}
 export GOVC_USERNAME=${vcenter_username}
@@ -567,4 +572,14 @@ else
 	export GOVC_INSECURE=1
 fi
 
-${govc} about #test that we have a good connection
+#test that we have a good connection
+if ! ret=$(${govc} about); then
+	writeErr "could not connect to vcenter with provided info () - ${ret}"
+
+	exit 1
+fi
+
+if [[ ${ret} == *"specify an"* ]]; then
+	writeErr "${ret}"
+	exit 1
+fi

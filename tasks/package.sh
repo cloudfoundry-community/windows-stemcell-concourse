@@ -84,16 +84,16 @@ fi
 echo "--------------------------------------------------------"
 echo "Start package"
 echo "--------------------------------------------------------"
-if ! ${stembuildPath} package \
-		-vcenter-url "${vcenter_url}" \
-		-vcenter-username "${vcenter_username}" \
-		-vcenter-password "${vcenter_password}" \
-		-vm-inventory-path "${iPath}" \
-		-vcenter-ca-certs "${cert_path}"; then
-  writeErr "running package"
-  exit 1
-else
-	echo "Done"
+args="-vcenter-url '${vcenter_url}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}'"
+
+[[ ! -z ${cert_path} ]] && args="${args} -vcenter-ca-certs '${cert_path}'"
+
+cmd="${stembuildPath} package ${args}"
+
+echo "${cmd}"
+if ! eval ${cmd}; then
+	writeErr "running package"
+	exit 1
 fi
 
 echo "--------------------------------------------------------"

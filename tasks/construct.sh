@@ -117,7 +117,9 @@ fi
 echo "--------------------------------------------------------"
 echo "Start construct"
 echo "--------------------------------------------------------"
-args="-vm-ip '${ip_address}' -vm-username 'administrator' -vm-password '${admin_password}'  -vcenter-url '${vcenter_url}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}' -vcenter-ca-certs '${cert_path}'"
+args="-vm-ip '${ip_address}' -vm-username 'administrator' -vm-password '${admin_password}' -vcenter-url '${vcenter_url}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}'"
+
+[[ ! -z ${cert_path} ]] && args="${args} -vcenter-ca-certs '${cert_path}'"
 
 cmd="${stembuildPath} construct ${args}"
 

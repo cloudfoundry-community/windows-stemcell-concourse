@@ -7,13 +7,13 @@
 #
 
 ######################################
-# Description:
+# Description: Installs file system tools used to create a floppy img
 # 	
 # Arguments:
 #		None
 #######################################
-function install7Zip(){
-  apt-get -y install p7zip-full
+function installFsTools(){
+	apt-get -y install dosfstools mtools
 
 	return 0
 }
@@ -25,7 +25,7 @@ function install7Zip(){
 #		None
 #######################################
 function installcurl(){
-  apt-get -y install curl
+  	apt-get -y install curl
 
 	return 0
 }
@@ -37,7 +37,7 @@ function installcurl(){
 #		None
 #######################################
 function installjq(){
-  apt-get -y install jq
+	apt-get -y install jq
 
 	return 0
 }
@@ -128,5 +128,5 @@ apt-get update
 #sudo apt-get install software-properties-common
 #add-apt-repository universe
 command -v jq >/dev/null 2>&1 || installjq
-command -v 7z >/dev/null 2>&1 || install7Zip
+command -v mcopy >/dev/null 2>&1 || installFsTools
 command -v curl >/dev/null 2>&1 || installcurl

@@ -163,6 +163,29 @@ else
 fi
 
 echo "--------------------------------------------------------"
+echo "Create and insert floppy boot image"
+echo "--------------------------------------------------------"
+dd if=/dev/zero of=/tmp/boot.img count=1440 bs=1k
+/sbin/mkfs.msdos /tmp/boot.img
+#TODO: path to autounattend.xml needs to be configurable
+mcopy -i /tmp/boot.img ./pipeline-resources/assets/autounattend.xml ::/
+
+datastoreFolder=$(dirname "${iso_path_in_datastore}")
+if ! uploadToDatastore "/tmp/boot.img" "${iso_datastore}" "${datastoreFolder}/boot.img"; then
+	writeErr "uploading floppy image to datastore"
+	exit 1
+else
+	echo "Done"
+fi
+
+if ! insertFloppy "${base_vm_name}" "${iso_datastore}" "${datastoreFolder}/boot.img"; then
+	writeErr "inserting floppy image on VM"
+	exit 1
+else
+	echo "Done"
+fi
+
+echo "--------------------------------------------------------"
 echo "Power on VM and begin install windows"
 echo "--------------------------------------------------------"
 if ! powerOnVM "${baseVMIPath}"; then

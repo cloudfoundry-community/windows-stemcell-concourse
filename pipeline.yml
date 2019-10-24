@@ -57,7 +57,8 @@ resources:
     access_key_id: ((s3.access-key-id))
     bucket: ((s3.bucket))
     secret_access_key: ((s3.secret-access-key))
-    versioned_file: lgpo/lgpo.zip
+    versioned_file: lgpo/LGPO.zip
+    endpoint: ((s3.endpoint))
 
 #- name: lgpo
 #  type: gcs
@@ -81,6 +82,7 @@ resources:
     bucket: ((s3.bucket))
     secret_access_key: ((s3.secret-access-key))
     versioned_file: autounattend/autounattend.xml
+    endpoint: ((s3.endpoint))
 
 #- name: autounattend
 #  type: gcs
@@ -104,13 +106,14 @@ resources:
     bucket: ((s3.bucket))
     secret_access_key: ((s3.secret-access-key))
     versioned_file: iso/17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us_1.ISO
+    endpoint: ((s3.endpoint))
 
 #- name: iso
 #  type: gcs
 #  source:
 #    json_key: ((gcs.json-key))
 #    bucket: ((gcs.bucket))
-#    versioned_file: iso/*.ISO
+#    versioned_file: iso/(.*).iso
 
 #- name: iso
 #  type: azure-blobstore
@@ -118,15 +121,17 @@ resources:
 #    storage_account_name: ((azure.storage_account_name))
 #    storage_account_key: ((azure.storage_account_key))
 #    container: ((azure.container))
-#    versioned_file: iso/*.ISO
+#    versioned_file: iso/(.*).iso
 
 - name: stemcell-store
   type: s3
   source:
+  source:
     access_key_id: ((s3.access-key-id))
     secret_access_key: ((s3.secret-access-key))
     bucket: ((s3.bucket))
-    versioned_file: stemcell/bosh-stemcell-*.*-vsphere*.tgz
+    versioned_file: stemcell/bosh-stemcell-2019.(.*)-vsphere-esxi-windows2019-go_agent.tgz
+    endpoint: ((s3.endpoint))
 
 #- name: stemcell-store
 #  type: gcs
@@ -170,7 +175,6 @@ vm-params: &vm-params
 
 os-params: &os-params
   operating_system_name: ((operating-system-name))
-  product_key: ((product-key))
   ip_address: ((ip-address))
   language: ((language))
   gateway_address: ((gateway-address))

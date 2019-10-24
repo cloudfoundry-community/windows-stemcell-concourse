@@ -3,7 +3,7 @@
 #RELEASE SOURCE
 ###########################################
 os-version: "" #1709|1803|2019
-pivnet-token: 
+pivnet-token:  #if using the PivNet distribution of stembuild
 tasks:
   uri: https://github.com/cloudfoundry-community/windows-stemcell-concourse.git
 
@@ -27,19 +27,20 @@ s3:
 ###########################################
 #REQUIRED PARAMS
 ###########################################
-vcenter-url: #The DNS or IP address to vcenter server
-vcenter-username: #User to interact with vcenter server
-vcenter-password: #Password for vcenter user to work as
-vcenter-datacenter: #Vsphere datacenter name
+vcenter-url: "" #The DNS or IP address to vcenter server
+vcenter-username: "" #User to interact with vcenter server
+vcenter-password: "" #Password for vcenter user to work as
+vcenter-datacenter: "" #Vsphere datacenter name
+vcenter-ca-certs: 
 
-base-vm-name: #The name of the initial Windows VM created
+base-vm-name: "" #The name of the initial Windows VM created
 
-vm-folder: #The vsphere datacenter VM folder to hold base and clone VMs
-vm-datastore: #The vsphere datastore to hold VM disks
-vm-host: #The vsphere host name or IP to create VMs on
-esxi-version: #Version of esxi the vm-host is using
-iso-datastore: #The vcenter datastore name where the formatted ISO will be uploaded
-iso-folder: #The folder in iso-datastore to hold the uploaded ISO
+vm-folder: "" #The vsphere datacenter VM folder to hold base and clone VMs
+vm-datastore: "" #The vsphere datastore to hold VM disks
+vm-host: "" #The vsphere host name or IP to create VMs on
+esxi-version: "" #Version of esxi the vm-host is using
+iso-datastore: "" #The vcenter datastore name where the formatted ISO will be uploaded
+iso-folder: "" #The folder in iso-datastore to hold the uploaded ISO
 operating-system-name: "" #Used during the Windows installaton
 ip-address: "" #The network address assigned to the VM
 gateway-address: "" #The address of the gateway network service
@@ -48,7 +49,6 @@ admin-password: "" #The Windows administrator password of the base VM
 
 ###########################################
 #OPTIONAL PARAMS (yaml still has to have them but leave it blank)
-vcenter-ca-certs: ''
 vm-resource-pool: ''
 vm-network: ''
 vm-cpu: ''

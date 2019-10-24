@@ -40,7 +40,7 @@ vm-datastore: "" #The vsphere datastore to hold VM disks
 vm-host: "" #The vsphere host name or IP to create VMs on
 esxi-version: "" #Version of esxi the vm-host is using
 iso-datastore: "" #The vcenter datastore name where the formatted ISO will be uploaded
-iso-folder: "" #The folder in iso-datastore to hold the uploaded ISO
+iso-path-in-datastore: #The datastore relative path to the Windows ISO file
 operating-system-name: "" #Used during the Windows installaton
 ip-address: "" #The network address assigned to the VM
 gateway-address: "" #The address of the gateway network service

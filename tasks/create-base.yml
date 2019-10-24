@@ -5,7 +5,6 @@ inputs:
   - name: pipeline-resources
   - name: govc
   - name: autounattend
-  - name: iso
 
 params:
   vcenter_ca_certs: ((vcenter-ca-certs))
@@ -28,7 +27,7 @@ params:
   firmware_type: ((firmware-type))
   disk_controller_type: ((disk-controller-type))
   iso_datastore: ((iso-datastore))
-  iso_folder: ((iso-folder))
+  iso_path_in_datastore: (iso-path-in-datastore))
   vm_resource_pool: ((vm-resource-pool))
 
   operating_system_name: ((operating-system-name))

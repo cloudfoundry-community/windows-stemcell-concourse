@@ -4,21 +4,17 @@ resource_types:
   source:
     repository: pivotalcf/pivnet-resource
     tag: latest-final
-
-#- name: gcs
-#  type: docker-image
-#  source:
-#    repository: frodenas/gcs-resource
-    
-#- name: azure-blobstore
-#  type: docker-image
-#  source:
-#    repository: pcfabr/azure-blobstore-resource
+- name: file-url
+  type: docker-image
+  source:
+    repository: pivotalservices/concourse-curl-resource
+    tag: latest
 
 resources:
 - name: ubuntu-image
   type: docker-image
-  source: { repository: ubuntu }
+  source:
+    repository: ubuntu
   
 - name: pipeline-resources
   type: git
@@ -52,76 +48,19 @@ resources:
     tag_filter: 0.21.(.*)
 
 - name: lgpo
-  type: s3
+  type: file-url
   source:
-    access_key_id: ((s3.access-key-id))
-    bucket: ((s3.bucket))
-    secret_access_key: ((s3.secret-access-key))
-    versioned_file: lgpo/LGPO.zip
-    endpoint: ((s3.endpoint))
-
-#- name: lgpo
-#  type: gcs
-#  source:
-#    json_key: ((gcs.json-key))
-#    bucket: ((gcs.bucket))
-#    versioned_file: lgpo/lgpo.zip
-
-#- name: lgpo
-#  type: azure-blobstore
-#  source:
-#    storage_account_name: ((azure.storage_account_name))
-#    storage_account_key: ((azure.storage_account_key))
-#    container: ((azure.container))
-#    versioned_file: lgpo/lgpo.zip
+    url: https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip
+    filename: LGPO.zip
 
 - name: autounattend
-  type: s3
+  type: git
   source:
-    access_key_id: ((s3.access-key-id))
-    bucket: ((s3.bucket))
-    secret_access_key: ((s3.secret-access-key))
-    versioned_file: autounattend/autounattend.xml
-    endpoint: ((s3.endpoint))
-
-#- name: autounattend
-#  type: gcs
-#  source:
-#    json_key: ((gcs.json-key))
-#    bucket: ((gcs.bucket))
-#    versioned_file: autounattend/autounattend.zip
-
-#- name: autounattend
-#  type: azure-blobstore
-#  source:
-#    storage_account_name: ((azure.storage_account_name))
-#    storage_account_key: ((azure.storage_account_key))
-#    container: ((azure.container))
-#    versioned_file: autounattend/autounattend.zip
-
-- name: iso
-  type: s3
-  source:
-    access_key_id: ((s3.access-key-id))
-    bucket: ((s3.bucket))
-    secret_access_key: ((s3.secret-access-key))
-    versioned_file: iso/17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us_1.iso
-    endpoint: ((s3.endpoint))
-
-#- name: iso
-#  type: gcs
-#  source:
-#    json_key: ((gcs.json-key))
-#    bucket: ((gcs.bucket))
-#    versioned_file: iso/(.*).iso
-
-#- name: iso
-#  type: azure-blobstore
-#  source:
-#    storage_account_name: ((azure.storage_account_name))
-#    storage_account_key: ((azure.storage_account_key))
-#    container: ((azure.container))
-#    versioned_file: iso/(.*).iso
+    uri: ((tasks.uri))
+    branch: master
+    #username: ((tasks.username))
+    #password: ((tasks.password))
+    #skip_ssl_verification: true
 
 - name: stemcell-store
   type: s3
@@ -132,21 +71,6 @@ resources:
     bucket: ((s3.bucket))
     versioned_file: stemcell/bosh-stemcell-2019.12-vsphere-esxi-windows2019-go_agent.tgz
     endpoint: ((s3.endpoint))
-
-#- name: stemcell-store
-#  type: gcs
-#  source:
-#    json_key: ((gcs.json-key))
-#    bucket: ((gcs.bucket))
-#    regexp: stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
-
-#- name: stemcell-store
-#  type: azure-blobstore
-#  source:
-#    storage_account_name: ((azure.storage_account_name))
-#    storage_account_key: ((azure.storage_account_key))
-#    container: ((azure.container))
-#    regexp: stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
 
 vcenter-params: &vcenter-params
   vcenter_ca_certs: ((vcenter-ca-certs))
@@ -171,7 +95,7 @@ vm-params: &vm-params
   firmware_type: ((firmware-type))
   disk_controller_type: ((disk-controller-type))
   iso_datastore: ((iso-datastore))
-  iso_folder: ((iso-folder))
+  iso_path_in_datastore: ((iso-path-in-datastore))
 
 os-params: &os-params
   operating_system_name: ((operating-system-name))
@@ -196,15 +120,12 @@ jobs:
           globs:
             - govc_linux_amd64.gz
       - get: autounattend
-      - get: iso
-        #trigger: true #start the pipeline whenever there is a new ISO
       - task: create-base
         file: pipeline-resources/tasks/create-base.yml
         image: ubuntu-image
         input_mapping:
           govc: govc
           autounattend: autounattend
-          iso: iso
           pipeline-resources: pipeline-resources
         params:
           <<: *vcenter-params

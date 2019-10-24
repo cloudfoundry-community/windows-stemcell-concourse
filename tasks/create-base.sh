@@ -22,6 +22,7 @@ THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 [[ -z "${vm_host}" ]] && (echo "vm_host is a required value" && exit 1)
 [[ -z "${esxi_version}" ]] && (echo "esxi_version is a required value" && exit 1)
 [[ -z "${iso_datastore}" ]] && (echo "iso_datastore is a required value" && exit 1)
+[[ -z "${iso_path_in_datastore}" ]] && (echo "iso_path_in_datastore is a required value" && exit 1)
 [[ -z "${operating_system_name}" ]] && (echo "operating_system_name is a required value" && exit 1) #"Windows Server 2019 SERVERSTANDARDCORE"
 [[ -z "${ip_address}" ]] && (echo "ip_address is a required value" && exit 1)
 [[ -z "${gateway_address}" ]] && (echo "gateway_address is a required value" && exit 1)
@@ -75,10 +76,10 @@ source "${THIS_FOLDER}/functions/autounattend.sh"
 if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
 # shellcheck source=./functions/govc.sh
 source "${THIS_FOLDER}/functions/govc.sh" \
-  -govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-  -url "${vcenter_url}" \
-  -username "${vcenter_username}" \
-  -password "${vcenter_password}" \
+	-govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
+	-url "${vcenter_url}" \
+	-username "${vcenter_username}" \
+	-password "${vcenter_password}" \
 	-use-cert "${use_cert}" \
 	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
 
@@ -91,9 +92,6 @@ baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}
 
 autounattendPath="$(find "${ROOT_FOLDER}/autounattend" -iname "autounattend.xml" 2>/dev/null | head -n1)"
 [[ ! -f "${autounattendPath}" ]] && (writeErr "autounattend.xml not found in ${ROOT_FOLDER}/autounattend" && exit 1)
-
-isoPath="$(find "${ROOT_FOLDER}/iso" -iname *.iso 2>/dev/null | head -n1)"
-[[ ! -f "${isoPath}" ]] && (writeErr "*.iso not found in ${ROOT_FOLDER}/iso" && exit 1)
 
 echo "--------------------------------------------------------"
 echo "Format autounattend"
@@ -118,78 +116,33 @@ else
 fi
 
 echo "--------------------------------------------------------"
-echo "Build ISO"
-echo "--------------------------------------------------------"
-extractISOPath="/mnt/formatIso"
-finalIsoFolder="/tmp"
-finalFileName="final-iso.iso"
-
-apt-get update && apt-get -y install genisoimage
-mkisofs -version
-if ! 7z x -y -o${extractISOPath} "${isoPath}"; then
-  writeErr "expanding iso"
-  exit 1
-fi
-
-cp "${autounattendPath}" "${extractISOPath}/autounattend.xml"
-finalIsoFilePath="${finalIsoFolder}/${finalFileName}"
-
-if ! mkisofs -quiet \
-  -b boot/etfsboot.com \
-  -no-emul-boot \
-  -boot-load-seg 0x07C0 \
-  -boot-load-size 8 \
-  -udf \
-	-allow-limited-size \
-  -input-charset UTF-8 \
-  -D -N -R -joliet -relaxed-filenames \
-  -V Windows \
-  -o ${finalIsoFilePath} \
-	${extractISOPath}; then
-  writeErr "creating new ISO"
-  exit 1
-else
-	echo "Done"
-fi
-
-echo "--------------------------------------------------------"
-echo "Upload ISO"
-echo "--------------------------------------------------------"
-if ! uploadToDatastore "${finalIsoFilePath}" "${iso_datastore}" "${iso_folder}/${base_vm_name}.iso"; then
-  writeErr "uploading iso to datastore"
-  exit 1
-else
-	echo "Done"
-fi
-
-echo "--------------------------------------------------------"
 echo "Create base VM"
 echo "--------------------------------------------------------"
 #Remove the VM if it already exists
 if ! destroyVM "${baseVMIPath}"; then
-  writeErr "destroying existing VM at ${baseVMIPath}"
+	writeErr "destroying existing VM at ${baseVMIPath}"
 	exit 1
 fi
 
 if ! createVMwithISO "${base_vm_name}" \
-	"${vm_datastore}" \
-	"${vm_host}" \
-	"${vm_network}" \
-	${vm_cpu} \
-	${vm_memory_mb} \
-	${vm_disk_gb} \
-	"${vm_folder}" \
-	"${vm_guest_os_id}" \
-	"${iso_datastore}" \
-	"${iso_folder}/${base_vm_name}.iso" \
-	"${vm_net_adapter}" \
-	"${esxi_version}" \
-	"${firmware_type}" \
-	"${disk_controller_type}" \
-	"${vm_resource_pool}" \
-	"${vcenter_datacenter}"; then
-  writeErr "creating base VM"
-  exit 1
+		"${vm_datastore}" \
+		"${vm_host}" \
+		"${vm_network}" \
+		${vm_cpu} \
+		${vm_memory_mb} \
+		${vm_disk_gb} \
+		"${vm_folder}" \
+		"${vm_guest_os_id}" \
+		"${iso_datastore}" \
+		"${iso_path_in_datastore}" \
+		"${vm_net_adapter}" \
+		"${esxi_version}" \
+		"${firmware_type}" \
+		"${disk_controller_type}" \
+		"${vm_resource_pool}" \
+		"${vcenter_datacenter}"; then
+	writeErr "creating base VM"
+  	exit 1
 else
 	echo "Done"
 fi
@@ -198,8 +151,8 @@ echo "--------------------------------------------------------"
 echo "Set boot order & connect CDRom"
 echo "--------------------------------------------------------"
 if ! setBootOrder "${baseVMIPath}"; then
-  writeErr "setting boot order"
-  exit 1
+	writeErr "setting boot order"
+	exit 1
 fi
 
 if ! connectDevice "${baseVMIPath}" "cdrom-3000"; then
@@ -213,8 +166,8 @@ echo "--------------------------------------------------------"
 echo "Power on VM and begin install windows"
 echo "--------------------------------------------------------"
 if ! powerOnVM "${baseVMIPath}"; then
-  writeErr "powering on VM"
-  exit 1
+	writeErr "powering on VM"
+	exit 1
 else
 	echo "Done"
 fi
@@ -226,7 +179,7 @@ echo "--------------------------------------------------------"
 echo -ne "|"
 while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
 	echo -ne "."
-  sleep 2m
+	sleep 2m
 	#TODO: add timeout so job doesn't run endlessly#
 done
 
@@ -237,8 +190,8 @@ echo "--------------------------------------------------------"
 echo "Eject cdrom"
 echo "--------------------------------------------------------"
 if ! ejectCDRom "${baseVMIPath}"; then
-  writeErr "ejecting cdrom"
-  exit 1
+	writeErr "ejecting cdrom"
+	exit 1
 else
 	echo "Done"
 fi

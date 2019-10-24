@@ -70,7 +70,7 @@ function uploadFile(){
 # Arguments:
 #		
 #######################################
-function uploadToDatastore(){
+function insertFloppy(){
 	local vm_name="${1}"
 	local datastore_name="${2}"
 	local floppy_img_ds_path="${3}"	

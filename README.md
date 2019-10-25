@@ -6,6 +6,8 @@ One notable design choice of this approach is the use of the [Windows answer fil
 
 That said, the autounattend xml is complex and confusing. So attempts are made to abstract some of that away by pulling out specific settings as pipeline variables and templatizing the XML.
 
+![Concourse screenshot](screenshot.png "Concourse screenshot")
+
 ## A walk around the project
 
   ```console

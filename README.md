@@ -111,7 +111,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 | iso-datastore | The vcenter datastore name where the formatted ISO will be uploaded. !!Note the VMs need to have access to this datastore,  from their `vm-datastore` to retrieve the ISO. | Yes | (alphanumeric, underscore, dash) |
 | iso-path-in-datastore | The Windows ISO file path in `iso-datastore`.  | Yes | **Win-Stemcell-ISO/windows2019.iso** |
 | operating-system-name | Used during the Windows installaton. Most ISOs hold different flavors of an OS and during install you specify which is desired. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-setup-imageinstall-dataimage-installfrom-metadata) for more detail. | Yes | Windows Server 2019 SERVERSTANDARDCORE |
-| ip-address | The network address assigned to the VM. Note that both the base and the clone(s) use the same IP, as they should never need to be powered on at the same time. The address needs to be routable to wherevere the tasks are run from (local desktop, concourse worker, etc). | Yes | (IP) |
+| ip-address | The network address in CIDR notation assigned to the VM. Note that both the base and the clone(s) use the same IP, as they should never need to be powered on at the same time. The address needs to be routable to wherevere the tasks are run from (local desktop, concourse worker, etc). | Yes | 10.0.0.5/24 |
 | gateway-address | The address of the gateway network service. | Yes | (IP, DNS name) |
 | dns-address | The address of the DNS network service. | Yes | (IP, DNS name) |
 | admin-password | The Windows administrator password of the base VM. Stembuild will scramble the cloned VM password. | Yes | (alphanumeric) |

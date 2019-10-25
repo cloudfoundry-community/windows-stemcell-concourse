@@ -92,6 +92,8 @@ baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}
 
 autounattendPath="$(find "${ROOT_FOLDER}/autounattend" -iname "autounattend.xml" 2>/dev/null | head -n1)"
 [[ ! -f "${autounattendPath}" ]] && (writeErr "autounattend.xml not found in ${ROOT_FOLDER}/autounattend" && exit 1)
+unattendPath="$(find "${ROOT_FOLDER}/autounattend" -iname "unattend.xml" 2>/dev/null | head -n1)"
+[[ ! -f "${unattendPath}" ]] && (writeErr "unattend.xml not found in ${ROOT_FOLDER}/unattend" && exit 1)
 
 echo "--------------------------------------------------------"
 echo "Format autounattend"
@@ -168,6 +170,7 @@ echo "--------------------------------------------------------"
 dd if=/dev/zero of=/tmp/boot.img count=1440 bs=1k
 /sbin/mkfs.msdos /tmp/boot.img
 mcopy -i /tmp/boot.img "${autounattendPath}" ::/
+mcopy -i /tmp/boot.img "${unattendPath}" ::/
 
 datastoreFolder=$(dirname "${iso_path_in_datastore}")
 if ! uploadToDatastore "/tmp/boot.img" "${iso_datastore}" "${datastoreFolder}/boot.img"; then

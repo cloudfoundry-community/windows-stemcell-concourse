@@ -10,27 +10,27 @@ ROOT_FOLDER="$( pwd )"
 THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 
 #######################################
-#       Validate required globals
+#       Validate required
 #######################################
 [[ -z "${vcenter_url}" ]] && (echo "vcenter_url is a required value" && exit 1)
 [[ -z "${vcenter_username}" ]] && (echo "vcenter_username is a required value" && exit 1)
 [[ -z "${vcenter_password}" ]] && (echo "vcenter_password is a required value" && exit 1)
 [[ -z "${vcenter_datacenter}" ]] && (echo "vcenter_datacenter is a required value" && exit 1)
-[[ -z "${vcenter_ca_certs}" ]] && vcenter_ca_certs=""
-
 [[ -z "${base_vm_name}" ]] && (echo "base_vm_name is a required value" && exit 1)
-
 [[ -z "${vm_folder}" ]] && (echo "vm_folder is a required value" && exit 1)
 [[ -z "${vm_datastore}" ]] && (echo "vm_datastore is a required value" && exit 1)
 [[ -z "${vm_host}" ]] && (echo "vm_host is a required value" && exit 1)
-[[ -z "${vm_network}" ]] && vm_network="VM Network"
-[[ -z "${vm_cpu}" ]] && vm_cpu=4
-[[ -z "${vm_memory_mb}" ]] && vm_memory_mb=8000
-[[ -z "${vm_resource_pool}" ]] && vm_resource_pool=""
 
-#TESTING/MANUAL VARS
-[[ -z "${use_cert}" ]] && use_cert="false" #for testing
-[[ -z "${cert_path}" ]] && cert_path="" #for testing
+#######################################
+#       Default optional
+#######################################
+vcenter_ca_certs=${vcenter_ca_certs:=''}
+use_cert=${use_cert:='false'}
+cert_path=${cert_path:=''}
+vm_network=${vm_network:='VM Network'}
+vm_cpu=${vm_cpu:=4}
+vm_memory_mb=${vm_memory_mb:=8000}
+vm_resource_pool=${vm_resource_pool:=''}
 
 if [[ ! -z "${vcenter_ca_certs}" ]]; then
 	use_cert="true"

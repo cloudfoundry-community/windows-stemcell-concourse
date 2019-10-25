@@ -10,47 +10,45 @@ ROOT_FOLDER="$( pwd )"
 THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 
 #######################################
-#       Validate required globals
+#       Validate required
 #######################################
 [[ -z "${vcenter_url}" ]] && (echo "vcenter_url is a required value" && exit 1)
 [[ -z "${vcenter_username}" ]] && (echo "vcenter_username is a required value" && exit 1)
 [[ -z "${vcenter_password}" ]] && (echo "vcenter_password is a required value" && exit 1)
 [[ -z "${vcenter_datacenter}" ]] && (echo "vcenter_datacenter is a required value" && exit 1)
-[[ -z "${vcenter_ca_certs}" ]] && vcenter_ca_certs=""
-
 [[ -z "${base_vm_name}" ]] && (echo "base_vm_name is a required value" && exit 1)
-
 [[ -z "${vm_folder}" ]] && (echo "vm_folder is a required value" && exit 1)
 [[ -z "${vm_datastore}" ]] && (echo "vm_datastore is a required value" && exit 1)
 [[ -z "${vm_host}" ]] && (echo "vm_host is a required value" && exit 1)
-[[ -z "${vm_network}" ]] && vm_network="VM Network"
-[[ -z "${vm_cpu}" ]] && vm_cpu=4
-[[ -z "${vm_memory_mb}" ]] && vm_memory_mb=8000
-[[ -z "${vm_disk_gb}" ]] && vm_disk_gb=100
-[[ -z "${vm_guest_os_id}" ]] && vm_guest_os_id="windows9Server64Guest"
-[[ -z "${vm_net_adapter}" ]] && vm_net_adapter="e1000e"
 [[ -z "${esxi_version}" ]] && (echo "esxi_version is a required value" && exit 1)
-[[ -z "${firmware_type}" ]] && firmware_type="bios"
-[[ -z "${disk_controller_type}" ]] && disk_controller_type="lsilogic-sas"
 [[ -z "${iso_datastore}" ]] && (echo "iso_datastore is a required value" && exit 1)
-[[ -z "${iso_folder}" ]] && iso_folder="Win-Stemcell-ISO"
-[[ -z "${vm_resource_pool}" ]] && vm_resource_pool=""
-
 [[ -z "${operating_system_name}" ]] && (echo "operating_system_name is a required value" && exit 1) #"Windows Server 2019 SERVERSTANDARDCORE"
-[[ -z "${product_key}" ]] && product_key=""
-[[ -z "${language}" ]] && language="en-US"
 [[ -z "${ip_address}" ]] && (echo "ip_address is a required value" && exit 1)
 [[ -z "${gateway_address}" ]] && (echo "gateway_address is a required value" && exit 1)
 [[ -z "${dns_address}" ]] && (echo "dns_address is a required value" && exit 1)
 [[ -z "${admin_password}" ]] && (echo "admin_password is a required value" && exit 1)
 
-[[ -z "${oobe_unattend_uri}" ]] && oobe_unattend_uri="https://raw.githubusercontent.com/cloudfoundry-community/windows-stemcell-concourse/master/assets/unattend.xml"
-[[ -z "${vmware_tools_uri}" ]] && vmware_tools_uri="https://packages.vmware.com/tools/releases/10.3.10/windows/x64/VMware-tools-10.3.10-12406962-x86_64.exe"
-[[ -z "${windows_update_module_uri}" ]] && windows_update_module_uri="http://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc/file/41459/25/PSWindowsUpdate.zip"
-
-#TESTING/MANUAL VARS
-[[ -z "${use_cert}" ]] && use_cert="false" #for testing
-[[ -z "${cert_path}" ]] && cert_path="" #for testing
+#######################################
+#       Default optional
+#######################################
+vcenter_ca_certs=${vcenter_ca_certs:=''}
+use_cert=${use_cert:='false'}
+cert_path=${cert_path:=''}
+vm_network=${vm_network:='VM Network'}
+vm_cpu=${vm_cpu:=4}
+vm_memory_mb=${vm_memory_mb:=8000}
+vm_disk_gb=${vm_disk_gb:=100}
+vm_resource_pool=${vm_resource_pool:=''}
+product_key=${product_key:=''}
+language=${language:='en-US'}
+oobe_unattend_uri=${oobe_unattend_uri:='https://raw.githubusercontent.com/cloudfoundry-community/windows-stemcell-concourse/master/assets/unattend.xml'}
+vmware_tools_uri=${vmware_tools_uri:='https://packages.vmware.com/tools/releases/10.3.10/windows/x64/VMware-tools-10.3.10-12406962-x86_64.exe'}
+windows_update_module_uri=${windows_update_module_uri:='http://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc/file/41459/25/PSWindowsUpdate.zip'}
+vm_guest_os_id=${vm_guest_os_id:='windows9Server64Guest'}
+vm_net_adapter=${vm_net_adapter:='e1000e'}
+firmware_type=${firmware_type:='bios'}
+disk_controller_type=${disk_controller_type:='lsilogic-sas'}
+iso_folder=${iso_folder:='Win-Stemcell-ISO'}
 
 if [[ ! -z "${vcenter_ca_certs}" ]]; then
 	use_cert="true"

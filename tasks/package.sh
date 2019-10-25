@@ -10,22 +10,23 @@ ROOT_FOLDER="$( pwd )"
 THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 
 #######################################
-#       Validate required globals
+#       Validate required
 #######################################
 [[ -z "${vcenter_url}" ]] && (echo "vcenter_url is a required value" && exit 1)
 [[ -z "${vcenter_username}" ]] && (echo "vcenter_username is a required value" && exit 1)
 [[ -z "${vcenter_password}" ]] && (echo "vcenter_password is a required value" && exit 1)
 [[ -z "${vcenter_datacenter}" ]] && (echo "vcenter_datacenter is a required value" && exit 1)
-[[ -z "${vcenter_ca_certs}" ]] && (echo "vcenter_ca_certs is a required value" && exit 1)
-
 [[ -z "${vm_folder}" ]] && (echo "vm_folder is a required value" && exit 1)
 
 [[ ! -d "${ROOT_FOLDER}/stembuild" ]] && (echo "expecting stembuild binary to be at ${ROOT_FOLDER}/stembuild" && exit 1)
 [[ ! -d "${ROOT_FOLDER}/stemcell" ]] && (echo "expecting stemcell dir to be at ${ROOT_FOLDER}/stemcell" && exit 1)
 
-#TESTING/MANUAL VARS
-[[ -z "${use_cert}" ]] && use_cert="false" #for testing
-[[ -z "${cert_path}" ]] && cert_path="" #for testing
+#######################################
+#       Default optional
+#######################################
+vcenter_ca_certs=${vcenter_ca_certs:=''}
+use_cert=${use_cert:='false'}
+cert_path=${cert_path:=''}
 
 if [[ ! -z "${vcenter_ca_certs}" ]]; then
 	use_cert="true"

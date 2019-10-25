@@ -167,8 +167,7 @@ echo "Create and insert floppy boot image"
 echo "--------------------------------------------------------"
 dd if=/dev/zero of=/tmp/boot.img count=1440 bs=1k
 /sbin/mkfs.msdos /tmp/boot.img
-#TODO: path to autounattend.xml needs to be configurable
-mcopy -i /tmp/boot.img ./pipeline-resources/assets/autounattend.xml ::/
+mcopy -i /tmp/boot.img "${autounattendPath}" ::/
 
 datastoreFolder=$(dirname "${iso_path_in_datastore}")
 if ! uploadToDatastore "/tmp/boot.img" "${iso_datastore}" "${datastoreFolder}/boot.img"; then

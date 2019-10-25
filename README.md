@@ -43,7 +43,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
 ### Setting things up
 
-  The pipeline definition offers different ways to store the needed assets. In either S3 compatible, AWS S3, Google Cloud Store, or Azure Blob Store. An example of S3 compatible is [Minio](https://min.io) or [Dell EMC ECS Object Store](https://www.dellemc.com/en-us/storage/ecs/index.htm). Each pipeline job is run on a simple [Ubuntu image](https://hub.docker.com/_/ubuntu) and installs needed dependencies (curl, jq, 7zip) while running. There are a few assets needed to run the pipeline...
+  The pipeline definition offers different ways to store the needed assets. In either S3 compatible, AWS S3, Google Cloud Store, or Azure Blob Store. An example of S3 compatible is [Minio](https://min.io) or [Dell EMC ECS Object Store](https://www.dellemc.com/en-us/storage/ecs/index.htm). Each pipeline job is run on a simple [Ubuntu image](https://hub.docker.com/_/ubuntu) and installs needed dependencies (curl, jq, dosfstools, mtools) while running. There are a few assets needed to run the pipeline...
 
   1. A current Windows image. Testing was done with Windows Server 2019 but you could also use Server 1709 or Server 1803. Windows ISO images are not distributable, so you will need to manually add it to the vSphere datastore. Note within the store, the pipeline is expecting the ISO to be within a datastore folder named `Win-Stemcell-ISO`. For testing you can download the [trial Windows Server 2019 ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019).
 

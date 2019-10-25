@@ -105,7 +105,7 @@ resources:
     access_key_id: ((s3.access-key-id))
     bucket: ((s3.bucket))
     secret_access_key: ((s3.secret-access-key))
-    versioned_file: iso/17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us_1.ISO
+    versioned_file: iso/17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us_1.iso
     endpoint: ((s3.endpoint))
 
 #- name: iso
@@ -130,7 +130,7 @@ resources:
     access_key_id: ((s3.access-key-id))
     secret_access_key: ((s3.secret-access-key))
     bucket: ((s3.bucket))
-    versioned_file: stemcell/bosh-stemcell-2019.(.*)-vsphere-esxi-windows2019-go_agent.tgz
+    versioned_file: stemcell/bosh-stemcell-2019.12-vsphere-esxi-windows2019-go_agent.tgz
     endpoint: ((s3.endpoint))
 
 #- name: stemcell-store
@@ -248,7 +248,7 @@ jobs:
         params:
           globs:
             - stembuild-linux-*
-      - task: create-base
+      - task: clone-base
         file: pipeline-resources/tasks/clone-base.yml
         image: ubuntu-image
         input_mapping:

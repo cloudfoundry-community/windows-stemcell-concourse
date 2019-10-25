@@ -24,8 +24,8 @@ function installFsTools(){
 # Arguments:
 #		None
 #######################################
-function installXmlStartlet(){
-	apt-get -y install xmlstartlet
+function installXmlstarlet(){
+	apt-get -y install xmlstarlet
 
 	return 0
 }
@@ -140,6 +140,6 @@ apt-get update
 #sudo apt-get install software-properties-common
 #add-apt-repository universe
 command -v jq >/dev/null 2>&1 || installjq
-command -v xml >/dev/null 2>&1 || installXmlStartlet
+command -v xml >/dev/null 2>&1 || installXmlstarlet
 command -v mcopy >/dev/null 2>&1 || installFsTools
 command -v curl >/dev/null 2>&1 || installcurl

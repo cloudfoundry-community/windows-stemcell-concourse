@@ -109,7 +109,7 @@ function formatAutoUnattend(){
 
 	# optionally add in the product key if set by user
 	if [[ -n "${product_key}" ]]; then
-		if ! xml ed --inplace -N u="urn:schemas-microsoft-com:unattend" \
+		if ! xmlstarlet ed --inplace -N u="urn:schemas-microsoft-com:unattend" \
 				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData" \
 				-t elem -n ProductKey -v "" \
 				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData/ProductKey" \

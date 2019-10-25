@@ -99,7 +99,7 @@ function formatAutoUnattend(){
   if ! sed -i -e "s~{{SYNCHRONOUS_COMMANDS}}~${sync_commands}~" \
 			-e "s|{{OPERATING_SYSTEM}}|${operating_system_name}|" \
 			-e "s|{{LANGUAGE}}|${language}|" \
-			-e "s|{{PRODUCT_KEY}}|${product_key}|" \
+			-e "s|{{PRODUCT_KEY}}|<ProductKey><WillShowUI>OnError</WillShowUI><Key>${product_key}</Key></ProductKey>|" \
 			-e "s|{{VM_IP}}|${ip_address}|" \
 			-e "s|{{VM_GATEWAY_IP}}|${gateway_address}|" \
 			-e "s|{{VM_DNS_IP}}|${dns_address}|" \

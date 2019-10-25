@@ -51,6 +51,7 @@
                 </OSImage>
             </ImageInstall>
             <UserData>
+                {{PRODUCT_KEY}}
                 <AcceptEula>true</AcceptEula>
             </UserData>
         </component>

@@ -51,7 +51,10 @@
                 </OSImage>
             </ImageInstall>
             <UserData>
-                {{PRODUCT_KEY}}
+                <ProductKey>
+                    <WillShowUI>OnError</WillShowUI>
+                    <Key>{{PRODUCT_KEY}}</Key>
+                </ProductKey>
                 <AcceptEula>true</AcceptEula>
             </UserData>
         </component>

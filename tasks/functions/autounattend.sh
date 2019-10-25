@@ -109,7 +109,12 @@ function formatAutoUnattend(){
 
 	# optionally add in the product key and xml elements if set by user
 	if [[ -n "${product_key}" ]]; then
-		if ! sed -i -e "s|{{PRODUCT_KEY}}|<ProductKey><WillShowUI>OnError</WillShowUI><Key>${product_key}</Key></ProductKey>|" \
+		#if ! sed -i -e "s|{{PRODUCT_KEY}}|<ProductKey><WillShowUI>OnError</WillShowUI><Key>${product_key}</Key></ProductKey>|" \
+		#		${unattend_path}; then
+		#	writeErr "Could not format autounattend product key correctly"
+		#	return 1
+		#fi
+		if ! sed -i -e "s|{{PRODUCT_KEY}}|${product_key}|" \
 				${unattend_path}; then
 			writeErr "Could not format autounattend product key correctly"
 			return 1

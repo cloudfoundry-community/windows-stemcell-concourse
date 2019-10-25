@@ -99,13 +99,21 @@ function formatAutoUnattend(){
   if ! sed -i -e "s~{{SYNCHRONOUS_COMMANDS}}~${sync_commands}~" \
 			-e "s|{{OPERATING_SYSTEM}}|${operating_system_name}|" \
 			-e "s|{{LANGUAGE}}|${language}|" \
-			-e "s|{{PRODUCT_KEY}}|<ProductKey><WillShowUI>OnError</WillShowUI><Key>${product_key}</Key></ProductKey>|" \
 			-e "s|{{VM_IP}}|${ip_address}|" \
 			-e "s|{{VM_GATEWAY_IP}}|${gateway_address}|" \
 			-e "s|{{VM_DNS_IP}}|${dns_address}|" \
 			${unattend_path}; then
-		writeErr "Could not format autounattend correctly"
+		writeErr "Could not format autounattend correctly with required params"
 		return 1
+	fi
+
+	# optionally add in the product key and xml elements if set by user
+	if [[ -n "${product_key}" ]]; then
+		if ! sed -i -e -e "s|{{PRODUCT_KEY}}|<ProductKey><WillShowUI>OnError</WillShowUI><Key>${product_key}</Key></ProductKey>|" \
+				${unattend_path}; then
+			writeErr "Could not format autounattend product key correctly"
+			return 1
+		fi
 	fi
 
 	return 0

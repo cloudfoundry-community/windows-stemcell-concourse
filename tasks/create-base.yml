@@ -31,6 +31,7 @@ params:
   vm_resource_pool: ((vm-resource-pool))
 
   operating_system_name: ((operating-system-name))
+  product_key: ((product-key))
   ip_address: ((ip-address))
   language: ((language))
   gateway_address: ((gateway-address))

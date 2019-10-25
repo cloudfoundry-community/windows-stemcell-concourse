@@ -19,6 +19,18 @@ function installFsTools(){
 }
 
 ######################################
+# Description: Installs xmlstartlet to manipulate xml docs
+# 	
+# Arguments:
+#		None
+#######################################
+function installXmlStartlet(){
+	apt-get -y install xmlstartlet
+
+	return 0
+}
+
+######################################
 # Description:
 # 	
 # Arguments:
@@ -128,5 +140,6 @@ apt-get update
 #sudo apt-get install software-properties-common
 #add-apt-repository universe
 command -v jq >/dev/null 2>&1 || installjq
+command -v xml >/dev/null 2>&1 || installXmlStartlet
 command -v mcopy >/dev/null 2>&1 || installFsTools
 command -v curl >/dev/null 2>&1 || installcurl

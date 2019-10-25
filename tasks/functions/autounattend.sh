@@ -103,20 +103,21 @@ function formatAutoUnattend(){
 			-e "s|{{VM_GATEWAY_IP}}|${gateway_address}|" \
 			-e "s|{{VM_DNS_IP}}|${dns_address}|" \
 			${unattend_path}; then
-		writeErr "Could not format autounattend correctly with required params"
+		writeErr "could not format ${unattend_path} correctly with required params"
 		return 1
 	fi
 
-	# optionally add in the product key and xml elements if set by user
+	# optionally add in the product key if set by user
 	if [[ -n "${product_key}" ]]; then
-		#if ! sed -i -e "s|{{PRODUCT_KEY}}|<ProductKey><WillShowUI>OnError</WillShowUI><Key>${product_key}</Key></ProductKey>|" \
-		#		${unattend_path}; then
-		#	writeErr "Could not format autounattend product key correctly"
-		#	return 1
-		#fi
-		if ! sed -i -e "s|{{PRODUCT_KEY}}|${product_key}|" \
-				${unattend_path}; then
-			writeErr "Could not format autounattend product key correctly"
+		if ! xml ed --inplace -N u="urn:schemas-microsoft-com:unattend" \
+				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData" \
+				-t elem -n ProductKey -v "" \
+				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData/ProductKey" \
+				-t elem -n WillShowUI -v "OnError" \
+				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData/ProductKey" \
+				-t elem -n Key -v "${product_key}" \
+				"${unattend_path}"; then
+			writeErr "could not insert product key into ${unattend_path}"
 			return 1
 		fi
 	fi

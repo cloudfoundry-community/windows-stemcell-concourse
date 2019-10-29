@@ -3,15 +3,15 @@
 set -o errexit
 set -o errtrace
 
-function read_dom () {
-  ORIGINAL_IFS=$IFS
-  IFS=\>
-  read -d \< ENTITY CONTENT
-  local ret=$?
-  #TAG_NAME=${ENTITY%% *}
-  #ATTRIBUTES=${ENTITY#* }
-  IFS=$ORIGINAL_IFS
-  return $ret
+function read_dom() {
+	ORIGINAL_IFS=$IFS
+	IFS=\>
+	read -d \< ENTITY CONTENT
+	local ret=$?
+	#TAG_NAME=${ENTITY%% *}
+	#ATTRIBUTES=${ENTITY#* }
+	IFS=$ORIGINAL_IFS
+	return $ret
 }
 function echoerr() {
 	echo "ERROR: $*"
@@ -21,65 +21,65 @@ function echosuccess() {
 	echo "[SUCCESS] $*"
 	date -u
 }
-function testAutoUnattend(){
-  local unattend_path="${1}"
+function testAutoUnattend() {
+	local unattend_path="${1}"
 
 	echo "Formatting xml"
-  if ! formatAutoUnattend \
-				"${unattend_path}" \
-				"${operating_system_name}" \
-				"${language}" \
-				"${product_key}" \
-				"${ip_address}" \
-				"${gateway_address}" \
-				"${dns_address}" \
-				"${admin_password}" \
-				"${oobe_unattend_uri}" \
-				"${vmware_tools_uri}" \
-				"${windows_update_module_uri}"; then
-		echoerr "formatting autounattend" 
-    return 1
-  fi
+	if ! formatAutoUnattend \
+		"${unattend_path}" \
+		"${operating_system_name}" \
+		"${language}" \
+		"${product_key}" \
+		"${ip_address}" \
+		"${gateway_address}" \
+		"${dns_address}" \
+		"${admin_password}" \
+		"${oobe_unattend_uri}" \
+		"${vmware_tools_uri}" \
+		"${windows_update_module_uri}"; then
+		echoerr "formatting autounattend"
+		return 1
+	fi
 
 	echo "Validating formatted xml"
-  while read_dom; do
-    if [[ -z $(echo -e "${CONTENT}" | tr -d '[:space:]') ]] ; then
-      continue
-    fi
+	while read_dom; do
+		if [[ -z $(echo -e "${CONTENT}" | tr -d '[:space:]') ]]; then
+			continue
+		fi
 
 		echo -ne "."
 
-    #echo "$ENTITY => $CONTENT"
-    if [[ ${CONTENT} == *'{{OPERATING_SYSTEM}}'* ]]; then
-      echoerr "Autounattend not formatted correctly - OPERATING_SYSTEM"
-      return 1
-    elif [[ ${CONTENT} == *'{{PRODUCT_KEY}}'* ]]; then
-      echoerr "Autounattend not formatted correctly - PRODUCT_KEY"
-      return 1
-    elif [[ ${CONTENT} == *'{{SYNCHRONOUS_COMMANDS}}'* ]]; then
-      echoerr "Autounattend not formatted correctly - SYNCHRONOUS_COMMANDS"
-      return 1
-    elif [[ ${CONTENT} == *'{{LANGUAGE}}'* ]]; then
-      echoerr "Autounattend not formatted correctly - LANGUAGE"
-      return 1
-    elif [[ ${CONTENT} == *'{{VM_IP}}'* ]]; then
-      echoerr "Autounattend not formatted correctly - VM_IP"
-      return 1
-    elif [[ ${CONTENT} == *'{{VM_GATEWAY_IP}}'* ]]; then
-      echoerr "Autounattend not formatted correctly - VM_GATEWAY_IP"
-      return 1
-    elif [[ ${CONTENT} == *'{{VM_DNS_IP}}'* ]]; then
-      echoerr "Autounattend not formatted correctly - VM_DNS_IP"
-      return 1
-    elif [[ ${CONTENT} == *'C:WindowsTemp'* ]]; then
-      echoerr "Autounattend not formatted correctly - Windows temp folder path"
-      return 1
-    fi
-  done < "${unattend_path}"
-	
-  return 0
+		#echo "$ENTITY => $CONTENT"
+		if [[ ${CONTENT} == *'{{OPERATING_SYSTEM}}'* ]]; then
+			echoerr "Autounattend not formatted correctly - OPERATING_SYSTEM"
+			return 1
+		elif [[ ${CONTENT} == *'{{PRODUCT_KEY}}'* ]]; then
+			echoerr "Autounattend not formatted correctly - PRODUCT_KEY"
+			return 1
+		elif [[ ${CONTENT} == *'{{SYNCHRONOUS_COMMANDS}}'* ]]; then
+			echoerr "Autounattend not formatted correctly - SYNCHRONOUS_COMMANDS"
+			return 1
+		elif [[ ${CONTENT} == *'{{LANGUAGE}}'* ]]; then
+			echoerr "Autounattend not formatted correctly - LANGUAGE"
+			return 1
+		elif [[ ${CONTENT} == *'{{VM_IP}}'* ]]; then
+			echoerr "Autounattend not formatted correctly - VM_IP"
+			return 1
+		elif [[ ${CONTENT} == *'{{VM_GATEWAY_IP}}'* ]]; then
+			echoerr "Autounattend not formatted correctly - VM_GATEWAY_IP"
+			return 1
+		elif [[ ${CONTENT} == *'{{VM_DNS_IP}}'* ]]; then
+			echoerr "Autounattend not formatted correctly - VM_DNS_IP"
+			return 1
+		elif [[ ${CONTENT} == *'C:WindowsTemp'* ]]; then
+			echoerr "Autounattend not formatted correctly - Windows temp folder path"
+			return 1
+		fi
+	done <"${unattend_path}"
+
+	return 0
 }
-function testCreateISO(){
+function testCreateISO() {
 	local isoPath="${1}"
 	local extractISOPath="${2}"
 	local finalIsoFilePath="${3}"
@@ -107,25 +107,25 @@ function testCreateISO(){
 		return 1
 	fi
 
-  return 0
+	return 0
 }
-function testUploadToDatastore(){
+function testUploadToDatastore() {
 	local iso_nm="${1}"
 	local finalIsoFilePath="${2}"
 
-  if ! uploadToDatastore "${finalIsoFilePath}" "${iso_datastore}" "${iso_folder}/${iso_nm}"; then
+	if ! uploadToDatastore "${finalIsoFilePath}" "${iso_datastore}" "${iso_folder}/${iso_nm}"; then
 		echoerr "uploading iso to datastore"
 		return 1
 	fi
 
-  return 0
+	return 0
 }
-function testCreateVMwithISO(){
+function testCreateVMwithISO() {
 	local iPath="${1}"
 	local vm_nm="${2}"
 	local iso_path="${3}"
 
-  if ! createVMwithISO "${vm_nm}" \
+	if ! createVMwithISO "${vm_nm}" \
 		"${vm_datastore}" \
 		"${vm_host}" \
 		"${vm_network}" \
@@ -142,24 +142,30 @@ function testCreateVMwithISO(){
 		"${disk_controller_type}" \
 		"${vm_resource_pool}" \
 		"${vcenter_datacenter}"; then
-    return 1
-  fi
-	
-	if ! exists=$(vmExists ${iPath}); then echo ${exists}; return 1; fi
+		return 1
+	fi
+
+	if ! exists=$(vmExists ${iPath}); then
+		echo ${exists}
+		return 1
+	fi
 	if [[ ${exists} == "false" ]]; then
 		echoerr "could not find vm at ${iPath}"
 		return 1
 	fi
 
-	if ! powerState=$(getPowerState ${iPath}); then echo "${powerState}"; return 1; fi
+	if ! powerState=$(getPowerState ${iPath}); then
+		echo "${powerState}"
+		return 1
+	fi
 	if [[ "${powerState}" == *"poweredOn"* ]]; then
 		echoerr "vm should not be powered on"
 		return 1
 	fi
 
-  return 0
+	return 0
 }
-function testSetBootOrder(){
+function testSetBootOrder() {
 	local iPath="${1}"
 
 	if ! setBootOrder "${iPath}"; then
@@ -169,7 +175,7 @@ function testSetBootOrder(){
 
 	return 0
 }
-function testConnectDevice(){
+function testConnectDevice() {
 	local iPath="${1}"
 	local device_name="${2}"
 
@@ -180,14 +186,14 @@ function testConnectDevice(){
 
 	return 0
 }
-function testPowerOnToInstallWindows(){
+function testPowerOnToInstallWindows() {
 	local iPath="${1}"
 
 	if ! powerOnVM "${iPath}"; then
 		echoerr "powering on VM"
 		return 1
 	fi
-	
+
 	echo -ne "Installing windows "
 	while [[ $(getPowerState "${iPath}") == *"poweredOn"* ]]; do
 		echo -ne "."
@@ -196,7 +202,7 @@ function testPowerOnToInstallWindows(){
 
 	return 0
 }
-function testEjectCDRom(){
+function testEjectCDRom() {
 	local iPath="${1}"
 
 	if ! ejectCDRom ${iPath}; then
@@ -204,7 +210,7 @@ function testEjectCDRom(){
 		return 1
 	fi
 }
-function testValidateAndPowerOff(){
+function testValidateAndPowerOff() {
 	local iPath="${1}"
 
 	if ! validateAndPowerOff "${iPath}"; then
@@ -212,25 +218,25 @@ function testValidateAndPowerOff(){
 		return 1
 	fi
 }
-function testCloneVM(){
+function testCloneVM() {
 	local new_vm_name="${1}"
 	local vm_to_clone_name="${2}"
 
 	if ! clonevm \
-			"${new_vm_name}" \
-			"${vm_datastore}" \
-			"${vm_folder}" \
-			"${vm_host}" \
-			"${vm_resource_pool}" \
-			"${vm_network}" \
-			"${vm_cpu}" \
-			"${vm_memory_mb}" \
-			"${vm_to_clone_name}"; then
+		"${new_vm_name}" \
+		"${vm_datastore}" \
+		"${vm_folder}" \
+		"${vm_host}" \
+		"${vm_resource_pool}" \
+		"${vm_network}" \
+		"${vm_cpu}" \
+		"${vm_memory_mb}" \
+		"${vm_to_clone_name}"; then
 		echoerr "cloning base vm"
 		exit 1
 	fi
 }
-function testConstruct(){
+function testConstruct() {
 	local iPath="${1}"
 	local stembuildPath="${2}"
 	local lgpoPath="${3}"
@@ -255,7 +261,7 @@ function testConstruct(){
 
 	return 0
 }
-function testPackage(){
+function testPackage() {
 	local iPath="${1}"
 	local stembuildPath="${2}"
 
@@ -272,10 +278,10 @@ function testPackage(){
 	return 0
 }
 #function lookupDevice(){
-	#sudo -E govc/govc_linux_amd64 device.ls -vm Win-Stemcell-Base -json
+#sudo -E govc/govc_linux_amd64 device.ls -vm Win-Stemcell-Base -json
 #}
 #function validateVMDevice(){
-	#sudo -E govc/govc_linux_amd64 device.info -vm Win-Stemcell-Base cdrom-*
+#sudo -E govc/govc_linux_amd64 device.info -vm Win-Stemcell-Base cdrom-*
 #}
 
 #===============================================================================
@@ -349,51 +355,51 @@ else
 	echosuccess "Uploaded to datastore"
 fi
 
-if ! testCreateVMwithISO "${baseVMIPath}" "${base_vm_name}" "${iso_folder}/${base_vm_name}.iso" ; then
-  echo "[ERROR] Testing createVMwithISO"
-  exit 1
+if ! testCreateVMwithISO "${baseVMIPath}" "${base_vm_name}" "${iso_folder}/${base_vm_name}.iso"; then
+	echo "[ERROR] Testing createVMwithISO"
+	exit 1
 else
 	echosuccess "VM Successfully created and validated"
 fi
 
 if ! testConnectDevice "${baseVMIPath}" "cdrom-3000"; then
-  echo "[ERROR] Testing testConnectDevice"
-  exit 1
+	echo "[ERROR] Testing testConnectDevice"
+	exit 1
 else
 	echosuccess "Connected device"
 fi
 
 if ! testSetBootOrder "${baseVMIPath}"; then
-  echo "[ERROR] Testing boot order"
-  exit 1
+	echo "[ERROR] Testing boot order"
+	exit 1
 else
 	echosuccess "Boot order validated"
 fi
 
 if ! testPowerOnToInstallWindows "${baseVMIPath}"; then
-  echo "[ERROR] Testing poweron to install windows"
-  exit 1
+	echo "[ERROR] Testing poweron to install windows"
+	exit 1
 else
 	echosuccess "Installed windows"
 fi
 
 if ! testEjectCDRom "${baseVMIPath}"; then
-  echo "[ERROR] Testing eject CD rom"
-  exit 1
+	echo "[ERROR] Testing eject CD rom"
+	exit 1
 else
 	echosuccess "Ejected CD rom"
 fi
 
 if ! testValidateAndPowerOff "${baseVMIPath}"; then
-  echo "[ERROR] Testing validate and power off"
-  exit 1
+	echo "[ERROR] Testing validate and power off"
+	exit 1
 else
 	echosuccess "VM validated and powered off"
 fi
 
 if ! testCloneVM "${stembuild_vm_name}" "${base_vm_name}"; then
-  echo "[ERROR] Testing clone VM"
-  exit 1
+	echo "[ERROR] Testing clone VM"
+	exit 1
 else
 	echosuccess "Cloned VM"
 fi
@@ -406,15 +412,15 @@ else
 fi
 
 if ! testConstruct "${stembuildVMIPath}" "${stembuildPath}" "${lgpoPath}"; then
-  echo "[ERROR] Testing stembuild construct"
-  exit 1
+	echo "[ERROR] Testing stembuild construct"
+	exit 1
 else
 	echosuccess "Ran stembuild construct"
 fi
 
 if ! testPackage "${stembuildVMIPath}" "${stembuildPath}"; then
-  echo "[ERROR] Testing stembuild package"
-  exit 1
+	echo "[ERROR] Testing stembuild package"
+	exit 1
 else
 	echosuccess "Ran stembuild package"
 fi

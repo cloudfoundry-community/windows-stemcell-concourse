@@ -550,7 +550,7 @@ function ejectCDRom(){
 function ejectAndRemoveFloppyDrive(){
 	local vm_ipath="${1}"
 
-	id="$(${govc} device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-\d*')"
+	id="$(${govc} device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-[0-9]*')"
 
 	if ! ${govc} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id} ; then
 		writeErr "Could not eject floppy at ${vm_ipath}"

@@ -115,6 +115,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 | gateway-address | The address of the gateway network service. | Yes | (IP, DNS name) |
 | dns-address | The address of the DNS network service. | Yes | (IP, DNS name) |
 | admin-password | The Windows administrator password of the base VM. Stembuild will scramble the cloned VM password. | Yes | (alphanumeric) |
+| product-key | The Windows product key. | No | (alphanumeric) |
 | language | The default language, locale, and other international settings to use during Windows Setup. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-international-core-winpe) for more detail. | No | **en-US** |
 | oobe-unattend-uri | The download location of the unattend to use for admin account set up. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-oobe) for more detail. | No | **[This Repo]/assets/unattend.xml** |
 | vmware-tools-uri | The exe to install VMWare tools. This is required by stembuild as well as a VSphere best practice. See the [FTP](https://packages.vmware.com/tools/releases/10.3.10/windows/x64) to manually download. | No | **Current tested version 10.3.10** |

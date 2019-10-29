@@ -542,6 +542,30 @@ function ejectCDRom(){
 }
 
 ######################################
+# Description: Ejects and removes the floppy and drive
+# 	
+# Arguments: The VM inventory path
+#		
+#######################################
+function ejectAndRemoveFloppyDrive(){
+	local vm_ipath="${1}"
+
+	id="$(govc device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-\d*')"
+
+	if ! ${govc} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id} ; then
+		writeErr "Could not eject floppy at ${vm_ipath}"
+		return 1
+	fi
+
+	if ! ${govc} device.remove -vm.ipath=${vm_ipath} ${id} ; then
+		writeErr "Could not remove floppy at ${vm_ipath}"
+		return 1
+	fi
+
+	return 0
+}
+
+######################################
 
 vcenter_url=""
 vcenter_username=""

@@ -221,6 +221,16 @@ else
 	echo "Done"
 fi
 
+echo "--------------------------------------------------------"
+echo "Remove floppy drive"
+echo "--------------------------------------------------------"
+if ! ejectAndRemoveFloppyDrive "${baseVMIPath}"; then
+	writeErr "removing floppy drive"
+	exit 1
+else
+	echo "Done"
+fi
+
 #######################################
 #       Return result
 #######################################

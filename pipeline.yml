@@ -101,6 +101,7 @@ os-params: &os-params
   operating_system_name: ((operating-system-name))
   product_key: ((product-key))
   ip_address: ((ip-address))
+  subnet_mask: ((subnet-mask))
   language: ((language))
   gateway_address: ((gateway-address))
   dns_address: ((dns-address))

@@ -41,6 +41,7 @@ vm_memory_mb=${vm_memory_mb:=8000}
 vm_disk_gb=${vm_disk_gb:=100}
 vm_resource_pool=${vm_resource_pool:=''}
 product_key=${product_key:=''}
+subnet_mask=${subnet_mask:='255.255.255.0'}
 language=${language:='en-US'}
 oobe_unattend_uri=${oobe_unattend_uri:='https://raw.githubusercontent.com/cloudfoundry-community/windows-stemcell-concourse/master/assets/unattend.xml'}
 vmware_tools_uri=${vmware_tools_uri:='https://packages.vmware.com/tools/releases/10.3.10/windows/x64/VMware-tools-10.3.10-12406962-x86_64.exe'}
@@ -98,13 +99,15 @@ unattendPath="$(find "${ROOT_FOLDER}/autounattend" -iname "unattend.xml" 2>/dev/
 echo "--------------------------------------------------------"
 echo "Format autounattend"
 echo "--------------------------------------------------------"
+cidr=$(subnetMaskToCidr "${subnet_mask}")
+
 # format the file in place (no clone)
 if ! formatAutoUnattend \
 			"${autounattendPath}" \
 			"${operating_system_name}" \
 			"${language}" \
 			"${product_key}" \
-			"${ip_address}" \
+			"${ip_address}/${cidr}" \
 			"${gateway_address}" \
 			"${dns_address}" \
 			"${admin_password}" \

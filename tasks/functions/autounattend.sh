@@ -26,9 +26,8 @@ function formatAutoUnattend(){
   local ip_address="${5}"
   local gateway_address="${6}"
   local dns_address="${7}"
-  local admin_password="${8}"
-  local vmware_tools_uri="${9}"
-  local windows_update_module_uri="${10}"
+  local vmware_tools_uri="${8}"
+  local windows_update_module_uri="${9}"
 
   windowTempPath='C:/Windows/Temp' #assuming all commands are run in powershell, so / will be converted to \
   command_cnt=1
@@ -127,7 +126,7 @@ function formatAutoUnattend(){
 #######################################
 function formatUnattend(){
 	local unattend_path="${1}"
-	local language=${2}
+	local language="${2}"
 	local admin_password="${3}"
   
 	if ! sed -i -e "s|{{ADMINISTRATOR_PASSWORD}}|${admin_password}|" \

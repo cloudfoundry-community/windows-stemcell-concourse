@@ -109,7 +109,6 @@ if ! formatAutoUnattend \
 			"${ip_address}/${cidr}" \
 			"${gateway_address}" \
 			"${dns_address}" \
-			"${admin_password}" \
 			"${vmware_tools_uri}" \
 			"${windows_update_module_uri}"; then
 	writeErr "formatting autounattend" 
@@ -123,7 +122,7 @@ echo "Format OOBE unattend"
 echo "--------------------------------------------------------"
 # format the file in place (no clone)
 if ! formatUnattend \
-			"${autounattendPath}" \
+			"${unattendPath}" \
 			"${language}" \
 			"${admin_password}" ; then
 	writeErr "formatting OOBE unattend" 

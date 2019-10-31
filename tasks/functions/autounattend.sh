@@ -125,7 +125,7 @@ function formatAutoUnattend(){
 # Arguments: 
 #		
 #######################################
-function formatAutoUnattend(){
+function formatUnattend(){
 	local unattend_path="${1}"
 	local language=${2}
 	local admin_password="${3}"

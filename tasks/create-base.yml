@@ -37,7 +37,6 @@ params:
   gateway_address: ((gateway-address))
   dns_address: ((dns-address))
   admin_password: ((admin-password))
-  oobe_unattend_uri: ((oobe-unattend-uri))
   vmware_tools_uri: ((vmware-tools-uri))
   windows_update_module_uri: ((windows-update-module-uri))
     

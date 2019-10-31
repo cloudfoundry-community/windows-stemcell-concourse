@@ -34,7 +34,6 @@ function testAutoUnattend() {
 		"${gateway_address}" \
 		"${dns_address}" \
 		"${admin_password}" \
-		"${oobe_unattend_uri}" \
 		"${vmware_tools_uri}" \
 		"${windows_update_module_uri}"; then
 		echoerr "formatting autounattend"

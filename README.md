@@ -118,7 +118,6 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 | admin-password | The Windows administrator password of the base VM. Stembuild will scramble the cloned VM password. | Yes | (alphanumeric) |
 | product-key | The Windows product key. | No | (alphanumeric) |
 | language | The default language, locale, and other international settings to use during Windows Setup. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-international-core-winpe) for more detail. | No | **en-US** |
-| oobe-unattend-uri | The download location of the unattend to use for admin account set up. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-oobe) for more detail. | No | **[This Repo]/assets/unattend.xml** |
 | vmware-tools-uri | The exe to install VMWare tools. This is required by stembuild as well as a VSphere best practice. See the [FTP](https://packages.vmware.com/tools/releases/10.3.10/windows/x64) to manually download. | No | **Current tested version 10.3.10** |
 | windows-update-module-uri | The powershell module used to run window update and control reboots. See the [technet script center listing](https://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc) for more detail. | No | **PSWindowsUpdate.zip** |
 

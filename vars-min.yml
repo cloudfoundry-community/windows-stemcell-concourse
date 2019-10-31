@@ -8,21 +8,12 @@ tasks:
   uri: https://github.com/cloudfoundry-community/windows-stemcell-concourse.git
 
 ###########################################
-#BLOB STORAGE
+#STEMCELL STORAGE
 ###########################################
 s3:
   access-key-id: ""
   secret-access-key: ""
-  bucket: 
-
-#gcs:
-#  json-key: 
-#  bucket: 
-
-#azure:
-#  storage_account_name:
-#  storage_account_key:
-#  container: 
+  bucket: ""
 
 ###########################################
 #REQUIRED PARAMS
@@ -56,7 +47,7 @@ vm-disk-gb: ''
 vm-memory-mb: ''
 vm-guest-os-id: ''
 vm-net-adapter: ''
-subnet_mask: ''
+subnet-mask: ''
 firmware-type: ''
 disk-controller-type: ''
 iso-folder: ''

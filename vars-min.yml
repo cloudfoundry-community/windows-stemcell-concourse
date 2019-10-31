@@ -8,21 +8,12 @@ tasks:
   uri: https://github.com/cloudfoundry-community/windows-stemcell-concourse.git
 
 ###########################################
-#BLOB STORAGE
+#STEMCELL STORAGE
 ###########################################
 s3:
   access-key-id: ""
   secret-access-key: ""
-  bucket: 
-
-#gcs:
-#  json-key: 
-#  bucket: 
-
-#azure:
-#  storage_account_name:
-#  storage_account_key:
-#  container: 
+  bucket: ""
 
 ###########################################
 #REQUIRED PARAMS
@@ -40,7 +31,7 @@ vm-datastore: "" #The vsphere datastore to hold VM disks
 vm-host: "" #The vsphere host name or IP to create VMs on
 esxi-version: "" #Version of esxi the vm-host is using
 iso-datastore: "" #The vcenter datastore name where the formatted ISO will be uploaded
-iso-folder: "" #The folder in iso-datastore to hold the uploaded ISO
+iso-path-in-datastore: #The datastore relative path to the Windows ISO file
 operating-system-name: "" #Used during the Windows installaton
 ip-address: "" #The network address assigned to the VM
 gateway-address: "" #The address of the gateway network service
@@ -56,10 +47,12 @@ vm-disk-gb: ''
 vm-memory-mb: ''
 vm-guest-os-id: ''
 vm-net-adapter: ''
+subnet-mask: ''
 firmware-type: ''
 disk-controller-type: ''
 iso-folder: ''
 language: ''
+product-key: ''
 oobe-unattend-uri: ''
 vmware-tools-uri: ''
 windows-update-module-uri: ''

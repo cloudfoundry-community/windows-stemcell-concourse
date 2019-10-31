@@ -7,13 +7,25 @@
 #
 
 ######################################
-# Description:
+# Description: Installs file system tools used to create a floppy img
 # 	
 # Arguments:
 #		None
 #######################################
-function install7Zip(){
-  apt-get -y install p7zip-full
+function installFsTools(){
+	apt-get -y install dosfstools mtools
+
+	return 0
+}
+
+######################################
+# Description: Installs xmlstartlet to manipulate xml docs
+# 	
+# Arguments:
+#		None
+#######################################
+function installXmlstarlet(){
+	apt-get -y install xmlstarlet
 
 	return 0
 }
@@ -25,7 +37,7 @@ function install7Zip(){
 #		None
 #######################################
 function installcurl(){
-  apt-get -y install curl
+  	apt-get -y install curl
 
 	return 0
 }
@@ -37,7 +49,7 @@ function installcurl(){
 #		None
 #######################################
 function installjq(){
-  apt-get -y install jq
+	apt-get -y install jq
 
 	return 0
 }
@@ -51,6 +63,21 @@ function installjq(){
 function writeErr() {
 	local msg="${1}"
 	echo "[ERROR]: ${msg}"
+}
+
+######################################
+# Description: Converts a subnet mask to CIDR notation
+# 	
+# Arguments:
+#		None Subnet mask, i.e. 255.255.255.0
+#######################################
+subnetMaskToCidr ()
+{
+   # Assumes there's no "255." after a non-255 byte in the mask
+   local x=${1##*255.}
+   set -- 0^^^128^192^224^240^248^252^254^ $(( (${#1} - ${#x})*2 )) "${x%%.*}"
+   x=${1%%$3*}
+   echo $(( $2 + (${#x}/4) ))
 }
 
 ######################################
@@ -128,5 +155,6 @@ apt-get update
 #sudo apt-get install software-properties-common
 #add-apt-repository universe
 command -v jq >/dev/null 2>&1 || installjq
-command -v 7z >/dev/null 2>&1 || install7Zip
+command -v xml >/dev/null 2>&1 || installXmlstarlet
+command -v mcopy >/dev/null 2>&1 || installFsTools
 command -v curl >/dev/null 2>&1 || installcurl

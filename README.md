@@ -43,9 +43,9 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
 ### Setting things up
 
-  The pipeline definition offers different ways to store the needed assets. In either S3 compatible, AWS S3, Google Cloud Store, or Azure Blob Store. An example of S3 compatible is [Minio](https://min.io) or [Dell EMC ECS Object Store](https://www.dellemc.com/en-us/storage/ecs/index.htm). Each pipeline job is run on a simple [Ubuntu image](https://hub.docker.com/_/ubuntu) and installs needed dependencies (curl, jq, 7zip) while running. There are a few assets needed to run the pipeline...
+  The pipeline definition offers different ways to store the needed assets. In either S3 compatible, AWS S3, Google Cloud Store, or Azure Blob Store. An example of S3 compatible is [Minio](https://min.io) or [Dell EMC ECS Object Store](https://www.dellemc.com/en-us/storage/ecs/index.htm). Each pipeline job is run on a simple [Ubuntu image](https://hub.docker.com/_/ubuntu) and installs needed dependencies (curl, jq, dosfstools, mtools) while running. There are a few assets needed to run the pipeline...
 
-  1. A current Windows image. Testing was done with Windows Server 2019 but you could also use Server 1709 or Server 1803. Windows ISO images are not distributable, so you will need to manually add it to the blob store. Note within the store, the pipeline is expecting the ISO to be within a folder named `iso`. For testing you can download the [trial Windows Server 2019 ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019).
+  1. A current Windows image. Testing was done with Windows Server 2019 but you could also use Server 1709 or Server 1803. Windows ISO images are not distributable, so you will need to manually add it to the vSphere datastore. Note within the store, the pipeline is expecting the ISO to be within a datastore folder named `Win-Stemcell-ISO`. For testing you can download the [trial Windows Server 2019 ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019).
 
   1. Autounattend template xml with placeholders. During the `create-base` task the placeholders are filled with the provided pipeline values and the xml is combined with the ISO. Find this in the /assets folder. Read more about all the possabilities [in the docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend). Note within the store, the pipeline is expecting the xml to be within a folder named `autounattend`.
 
@@ -56,17 +56,6 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
   1. The Local Group Policy Object(LGPO) Utility. See the [docs](https://blogs.technet.microsoft.com/secguide/2016/01/21/lgpo-exe-local-group-policy-object-utility-v1-0/) for more detail. This is a non-distributable tool, so you will need to [download LGPO.zip here](https://www.microsoft.com/en-us/download/details.aspx?id=55319) and manually add it to the blob store. Note within the store, the pipeline is expecting the zip to be within a folder named `lgpo`.
 
   1. Stembuild executable, see the [docs](https://github.com/cloudfoundry-incubator/stembuild) for more detail. The pipeleline is set to download the latest stable release from Pivotal, that matches the ISO operating system version (1709, 1803, 2019). There is also an option to download the same asset from the project's GitHub releases.
-
-  Whichever store you choose it should have the following structure:
-
-  ```console
-  ├── autounattend
-  │   ├── autounattend.xml
-  ├── iso
-  │   └── <A_WINDOWS_SERVER_FILE_WITH_LONG_NAME>.iso
-  └── lgpo
-      └── lgpo.zip
-  ```
 
 ### Adding the pipeline
 
@@ -120,12 +109,14 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 | firmware-type | Firmware type for the VMs attached disk. | No | **bios**, efi, ...  |
 | disk-controller-type | Type of controller for the attached disk. | No | **lsilogic-sas**, IDE, BusLogic, ... |
 | iso-datastore | The vcenter datastore name where the formatted ISO will be uploaded. !!Note the VMs need to have access to this datastore,  from their `vm-datastore` to retrieve the ISO. | Yes | (alphanumeric, underscore, dash) |
-| iso-folder | The folder in `iso-datastore` to hold the uploaded ISO.  | No | **Win-Stemcell-ISO** |
+| iso-path-in-datastore | The Windows ISO file path in `iso-datastore`.  | Yes | **Win-Stemcell-ISO/windows2019.iso** |
 | operating-system-name | Used during the Windows installaton. Most ISOs hold different flavors of an OS and during install you specify which is desired. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-setup-imageinstall-dataimage-installfrom-metadata) for more detail. | Yes | Windows Server 2019 SERVERSTANDARDCORE |
-| ip-address | The network address assigned to the VM. Note that both the base and the clone(s) use the same IP, as they should never need to be powered on at the same time. The address needs to be routable to wherevere the tasks are run from (local desktop, concourse worker, etc). | Yes | (IP) |
+| ip-address | The network address assigned to the VM. Note that both the base and the clone(s) use the same IP, as they should never need to be powered on at the same time. The address needs to be routable to wherevere the tasks are run from (local desktop, concourse worker, etc). | Yes | 10.0.0.5 |
+| subnet-mask | The subnet mask of the IP address of the VM. | No | **255.255.255.0** |
 | gateway-address | The address of the gateway network service. | Yes | (IP, DNS name) |
 | dns-address | The address of the DNS network service. | Yes | (IP, DNS name) |
 | admin-password | The Windows administrator password of the base VM. Stembuild will scramble the cloned VM password. | Yes | (alphanumeric) |
+| product-key | The Windows product key. | No | (alphanumeric) |
 | language | The default language, locale, and other international settings to use during Windows Setup. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-international-core-winpe) for more detail. | No | **en-US** |
 | oobe-unattend-uri | The download location of the unattend to use for admin account set up. See the [docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-oobe) for more detail. | No | **[This Repo]/assets/unattend.xml** |
 | vmware-tools-uri | The exe to install VMWare tools. This is required by stembuild as well as a VSphere best practice. See the [FTP](https://packages.vmware.com/tools/releases/10.3.10/windows/x64) to manually download. | No | **Current tested version 10.3.10** |

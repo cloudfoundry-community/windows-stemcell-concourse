@@ -99,13 +99,27 @@ function formatAutoUnattend(){
   if ! sed -i -e "s~{{SYNCHRONOUS_COMMANDS}}~${sync_commands}~" \
 			-e "s|{{OPERATING_SYSTEM}}|${operating_system_name}|" \
 			-e "s|{{LANGUAGE}}|${language}|" \
-			-e "s|{{PRODUCT_KEY}}|${product_key}|" \
 			-e "s|{{VM_IP}}|${ip_address}|" \
 			-e "s|{{VM_GATEWAY_IP}}|${gateway_address}|" \
 			-e "s|{{VM_DNS_IP}}|${dns_address}|" \
 			${unattend_path}; then
-		writeErr "Could not format autounattend correctly"
+		writeErr "could not format ${unattend_path} correctly with required params"
 		return 1
+	fi
+
+	# optionally add in the product key if set by user
+	if [[ -n "${product_key}" ]]; then
+		if ! xmlstarlet ed --inplace -N u="urn:schemas-microsoft-com:unattend" \
+				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData" \
+				-t elem -n ProductKey -v "" \
+				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData/ProductKey" \
+				-t elem -n WillShowUI -v "OnError" \
+				-s "//u:component[@name='Microsoft-Windows-Setup']/u:UserData/ProductKey" \
+				-t elem -n Key -v "${product_key}" \
+				"${unattend_path}"; then
+			writeErr "could not insert product key into ${unattend_path}"
+			return 1
+		fi
 	fi
 
 	return 0

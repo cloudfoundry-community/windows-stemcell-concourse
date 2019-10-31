@@ -70,6 +70,35 @@ function uploadFile(){
 # Arguments:
 #		
 #######################################
+function insertFloppy(){
+	local vm_name="${1}"
+	local datastore_name="${2}"
+	local floppy_img_ds_path="${3}"	
+
+	if ! info=$(${govc} datastore.info -json ${datastore_name}); then
+		writeErr "Could not get datastore info at ${datastore_name}"
+		return 1
+	fi
+
+	if ! ${govc} device.floppy.add -vm="${vm_name}"; then
+		writeErr "Could not add floppy drive to ${vm_name}"
+		return 1
+	fi
+
+	if ! ${govc} device.floppy.insert -vm="${vm_name}" -ds="${datastore_name}" "${floppy_img_ds_path}"; then
+		writeErr "Could not insert floppy file ${floppy_img_ds_path} into ${vm_name}"
+		return 1
+	fi
+
+	return 0
+}
+
+######################################
+# Description:
+# 	
+# Arguments:
+#		
+#######################################
 function mkdir(){
 	local vm_ipath="${1}"
 	local vm_username="${2}"
@@ -506,6 +535,30 @@ function ejectCDRom(){
 
 	if ! ${govc} device.cdrom.eject -vm.ipath=${vm_ipath}; then
 		writeErr "Could not eject CD at ${vm_ipath}"
+		return 1
+	fi
+
+	return 0
+}
+
+######################################
+# Description: Ejects and removes the floppy and drive
+# 	
+# Arguments: The VM inventory path
+#		
+#######################################
+function ejectAndRemoveFloppyDrive(){
+	local vm_ipath="${1}"
+
+	id="$(${govc} device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-[0-9]*')"
+
+	if ! ${govc} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id} ; then
+		writeErr "Could not eject floppy at ${vm_ipath}"
+		return 1
+	fi
+
+	if ! ${govc} device.remove -vm.ipath=${vm_ipath} ${id} ; then
+		writeErr "Could not remove floppy at ${vm_ipath}"
 		return 1
 	fi
 

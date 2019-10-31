@@ -2,17 +2,17 @@
 
 #
 # Task Description:
-#   Odd utlity functions to make life easier. 
+#   Odd utlity functions to make life easier.
 #
 #
 
 ######################################
 # Description: Installs file system tools used to create a floppy img
-# 	
+#
 # Arguments:
 #		None
 #######################################
-function installFsTools(){
+function installFsTools() {
 	apt-get -y install dosfstools mtools
 
 	return 0
@@ -20,11 +20,11 @@ function installFsTools(){
 
 ######################################
 # Description: Installs xmlstartlet to manipulate xml docs
-# 	
+#
 # Arguments:
 #		None
 #######################################
-function installXmlstarlet(){
+function installXmlstarlet() {
 	apt-get -y install xmlstarlet
 
 	return 0
@@ -32,12 +32,12 @@ function installXmlstarlet(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
 #		None
 #######################################
-function installcurl(){
-  	apt-get -y install curl
+function installcurl() {
+	apt-get -y install curl
 
 	return 0
 }
@@ -48,7 +48,7 @@ function installcurl(){
 # Arguments:
 #		None
 #######################################
-function installjq(){
+function installjq() {
 	apt-get -y install jq
 
 	return 0
@@ -56,7 +56,7 @@ function installjq(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
 #		None
 #######################################
@@ -67,26 +67,25 @@ function writeErr() {
 
 ######################################
 # Description: Converts a subnet mask to CIDR notation
-# 	
+#
 # Arguments:
 #		None Subnet mask, i.e. 255.255.255.0
 #######################################
-subnetMaskToCidr ()
-{
-   # Assumes there's no "255." after a non-255 byte in the mask
-   local x=${1##*255.}
-   set -- 0^^^128^192^224^240^248^252^254^ $(( (${#1} - ${#x})*2 )) "${x%%.*}"
-   x=${1%%$3*}
-   echo $(( $2 + (${#x}/4) ))
+subnetMaskToCidr() {
+	# Assumes there's no "255." after a non-255 byte in the mask
+	local x=${1##*255.}
+	set -- 0^^^128^192^224^240^248^252^254^ $(((${#1} - ${#x}) * 2)) "${x%%.*}"
+	x=${1%%$3*}
+	echo $(($2 + (${#x} / 4)))
 }
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
 #		None
 #######################################
-function findFileExpandArchive(){
+function findFileExpandArchive() {
 	local filePath="${1}"
 	local archivePath="${2}"
 	local asExecutable="${3}"
@@ -115,14 +114,14 @@ function findFileExpandArchive(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
 #		None
 #######################################
 function parseStembuildVersion() {
 	local stembuildVersionOutput="${1}"
 	#stembuild-linux-x86_64-2019.12 version 2019.12.26, Windows Stemcell Building Tool
-	vars=( ${stembuildVersionOutput} )
+	vars=(${stembuildVersionOutput})
 
 	if [[ ${#vars[@]} -lt 3 ]]; then
 		writeErr "parsing stembuild version from string '${stembuildVersionOutput}'"

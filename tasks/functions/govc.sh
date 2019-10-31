@@ -13,18 +13,18 @@ exec 5>&1
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function powershellCmd(){
+function powershellCmd() {
 	local vm_ipath="${1}"
 	local vm_username="${2}"
 	local vm_password="${3}"
 	local script="${4}"
 
-  if ! pid=$(${govc} guest.start -ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
-    'C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "'+${script}+'"'); then
+	if ! pid=$(${govc} guest.start -ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
+		'C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "'+${script}+'"'); then
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -45,18 +45,18 @@ function powershellCmd(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function uploadFile(){
+function uploadFile() {
 	local vm_ipath="${1}"
 	local vm_username="${2}"
 	local vm_password="${3}"
 	local source_file="${4}"
 	local dest_file="${5}"
 
-  if ! ${govc} guest.upload -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
+	if ! ${govc} guest.upload -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
 		writeErr "Could not upload file to VM at ${vm_ipath}"
 		return 1
 	fi
@@ -66,14 +66,14 @@ function uploadFile(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function insertFloppy(){
+function insertFloppy() {
 	local vm_name="${1}"
 	local datastore_name="${2}"
-	local floppy_img_ds_path="${3}"	
+	local floppy_img_ds_path="${3}"
 
 	if ! info=$(${govc} datastore.info -json ${datastore_name}); then
 		writeErr "Could not get datastore info at ${datastore_name}"
@@ -95,17 +95,17 @@ function insertFloppy(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function mkdir(){
+function mkdir() {
 	local vm_ipath="${1}"
 	local vm_username="${2}"
 	local vm_password="${3}"
 	local folder_Path="${4}"
 
-  if ! ${govc} guest.mkdir -ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
+	if ! ${govc} guest.mkdir -ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
 		writeErr "Could not make dir on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -115,11 +115,11 @@ function mkdir(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function clonevm(){
+function clonevm() {
 	local vm_name="${1}"
 	local vm_datastore="${2}"
 	local vm_folder=${3}
@@ -154,11 +154,11 @@ function clonevm(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function resizeDisk(){
+function resizeDisk() {
 	local vm_ipath="${1}"
 	local disk_size_gb="${2}"
 
@@ -172,11 +172,11 @@ function resizeDisk(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function getInfo(){
+function getInfo() {
 	local vm_ipath="${1}"
 
 	if ! info=$(${govc} vm.info -json -vm.ipath="${vm_ipath}"); then
@@ -190,14 +190,17 @@ function getInfo(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function getPowerState(){
+function getPowerState() {
 	local vm_ipath="${1}"
 
-	if ! info=$(getInfo "${vm_ipath}"); then echo "${info}"; return 1; fi # 2>&1
+	if ! info=$(getInfo "${vm_ipath}"); then
+		echo "${info}"
+		return 1
+	fi # 2>&1
 
 	if ! powerState=$(echo ${info} | jq '.VirtualMachines[0].Runtime.PowerState'); then
 		writeErr "Could not parse vm info at ${vm_ipath}"
@@ -213,11 +216,11 @@ function getPowerState(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function powerOnVM(){
+function powerOnVM() {
 	local vm_ipath="${1}"
 
 	if ! ret=$(${govc} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true 2>&1); then
@@ -235,11 +238,11 @@ function powerOnVM(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function restartVM(){
+function restartVM() {
 	local vm_ipath="${1}"
 
 	if ! ${govc} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true; then
@@ -252,11 +255,11 @@ function restartVM(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function connectDevice(){
+function connectDevice() {
 	local vm_ipath="${1}"
 	local device_name="${2}"
 
@@ -270,11 +273,11 @@ function connectDevice(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function powerOffVM(){
+function powerOffVM() {
 	local vm_ipath="${1}"
 
 	if ! ${govc} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true; then
@@ -287,11 +290,11 @@ function powerOffVM(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function buildIpath(){
+function buildIpath() {
 	local vm_datacenter="${1}"
 	local vm_folder=${2}
 	local vm_name="${3}"
@@ -316,13 +319,13 @@ function buildIpath(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function vmExists(){
+function vmExists() {
 	local vm_ipath="${1}"
-	
+
 	if ! info=$(${govc} vm.info -json -vm.ipath="${vm_ipath}" 2>&1); then
 		if [[ "${info}" == *"no such VM"* ]]; then
 			echo false
@@ -339,14 +342,17 @@ function vmExists(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function validateAndPowerOn(){
+function validateAndPowerOn() {
 	local vm_ipath="${1}"
-	
-	if ! powerState=$(getPowerState ${vm_ipath}); then echo "${powerState}"; return 1; fi
+
+	if ! powerState=$(getPowerState ${vm_ipath}); then
+		echo "${powerState}"
+		return 1
+	fi
 
 	if [[ "${powerState}" == *"poweredOff"* ]]; then
 		if ! powerOnVM ${vm_ipath}; then return 1; fi
@@ -357,14 +363,17 @@ function validateAndPowerOn(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function validateAndPowerOff(){
+function validateAndPowerOff() {
 	local vm_ipath="${1}"
 
-	if ! powerState=$(getPowerState ${vm_ipath}); then echo "${powerState}"; return 1; fi
+	if ! powerState=$(getPowerState ${vm_ipath}); then
+		echo "${powerState}"
+		return 1
+	fi
 
 	if [[ "${powerState}" == *"poweredOn"* ]]; then
 		if ! powerOffVM ${vm_ipath}; then return 1; fi
@@ -375,14 +384,14 @@ function validateAndPowerOff(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function uploadToDatastore(){
+function uploadToDatastore() {
 	local file_path="${1}"
 	local datastore_name="${2}"
-	local saveas_file_path="${3}"	
+	local saveas_file_path="${3}"
 
 	if ! info=$(${govc} datastore.info -json ${datastore_name}); then
 		writeErr "Could not get datastore info at ${datastore_name}"
@@ -401,9 +410,9 @@ function uploadToDatastore(){
 # Description:
 # 	Gracefully try to remove the VM. If it doesn't exist continue on, if it does check for errors.
 # Arguments:
-#		
+#
 #######################################
-function destroyVM(){
+function destroyVM() {
 	local vm_ipath="${1}"
 
 	if ! ret=$(${govc} vm.destroy -vm.ipath=${vm_ipath} 2>&1); then
@@ -421,11 +430,11 @@ function destroyVM(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function folderExists(){
+function folderExists() {
 	local folder_ipath="${1}"
 
 	if ! info=$(${govc} folder.info -json "${folder_ipath}" 2>&1); then
@@ -444,11 +453,11 @@ function folderExists(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function createFolder(){
+function createFolder() {
 	local folder_ipath="${1}"
 
 	if ! ${govc} folder.create "${folder_ipath}"; then
@@ -461,11 +470,11 @@ function createFolder(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function createVMwithISO(){
+function createVMwithISO() {
 	local vm_name="${1}"
 	local vm_datastore="${2}"
 	local vm_host="${3}"
@@ -484,8 +493,14 @@ function createVMwithISO(){
 	local vm_resource_pool="${16}"
 	local vm_datacenter="${17}"
 
-	if ! folderIPath=$(buildIpath "${vm_datacenter}" "${vm_folder}"); then echo ${folderIPath}; return 1; fi
-	if ! folderExists=$(folderExists "${folderIPath}"); then echo ${folderExists}; return 1; fi
+	if ! folderIPath=$(buildIpath "${vm_datacenter}" "${vm_folder}"); then
+		echo ${folderIPath}
+		return 1
+	fi
+	if ! folderExists=$(folderExists "${folderIPath}"); then
+		echo ${folderExists}
+		return 1
+	fi
 
 	if [[ ${folderExists} == "false" ]]; then
 		if ! createFolder "${folderIPath}"; then return 1; fi
@@ -509,11 +524,11 @@ function createVMwithISO(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function setBootOrder(){
+function setBootOrder() {
 	local vm_ipath="${1}"
 
 	if ! ${govc} device.boot -order=cdrom,disk -vm.ipath=${vm_ipath}; then
@@ -526,11 +541,11 @@ function setBootOrder(){
 
 ######################################
 # Description:
-# 	
+#
 # Arguments:
-#		
+#
 #######################################
-function ejectCDRom(){
+function ejectCDRom() {
 	local vm_ipath="${1}"
 
 	if ! ${govc} device.cdrom.eject -vm.ipath=${vm_ipath}; then
@@ -543,21 +558,21 @@ function ejectCDRom(){
 
 ######################################
 # Description: Ejects and removes the floppy and drive
-# 	
+#
 # Arguments: The VM inventory path
-#		
+#
 #######################################
-function ejectAndRemoveFloppyDrive(){
+function ejectAndRemoveFloppyDrive() {
 	local vm_ipath="${1}"
 
 	id="$(${govc} device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-[0-9]*')"
 
-	if ! ${govc} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id} ; then
+	if ! ${govc} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id}; then
 		writeErr "Could not eject floppy at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! ${govc} device.remove -vm.ipath=${vm_ipath} ${id} ; then
+	if ! ${govc} device.remove -vm.ipath=${vm_ipath} ${id}; then
 		writeErr "Could not remove floppy at ${vm_ipath}"
 		return 1
 	fi
@@ -576,34 +591,33 @@ use_cert=""
 
 echo "Initializing govc"
 
-while [ $# -ne 0 ]
-do
+while [ $# -ne 0 ]; do
 	name="$1"
 	case "$name" in
-		-govc)
-				shift
-				govc="$1"
-				;;
-    --url|-[Uu]rl)
-				shift
-				vcenter_url="$1"
-				;;
-		--username|-[Uu]sername)
-				shift
-				vcenter_username="$1"
-				;;
-		--password|-[Pp]assword)
-				shift
-				vcenter_password="$1"
-				;;
-		-[Cc]ert-path)
-				shift
-				cert_path="$1"
-				;;
-		-[Uu]se-cert)
-				shift
-				use_cert="$1"
-				;;
+	-govc)
+		shift
+		govc="$1"
+		;;
+	--url | -[Uu]rl)
+		shift
+		vcenter_url="$1"
+		;;
+	--username | -[Uu]sername)
+		shift
+		vcenter_username="$1"
+		;;
+	--password | -[Pp]assword)
+		shift
+		vcenter_password="$1"
+		;;
+	-[Cc]ert-path)
+		shift
+		cert_path="$1"
+		;;
+	-[Uu]se-cert)
+		shift
+		use_cert="$1"
+		;;
 	esac
 
 	shift

@@ -6,8 +6,8 @@ set -o errtrace
 export ROOT_FOLDER
 export THIS_FOLDER
 
-ROOT_FOLDER="$( pwd )"
-THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
+ROOT_FOLDER="$(pwd)"
+THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 
 #######################################
 #       Validate required
@@ -36,8 +36,8 @@ if [[ ! -z "${vcenter_ca_certs}" ]]; then
 			val=substr($0,RSTART,RLENGTH)
 			gsub(/- | -/,"",val)
 			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') > ${ROOT_FOLDER}/cert.crt
-	
+			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
+
 	cert_path=${ROOT_FOLDER}/cert.crt
 fi
 
@@ -50,13 +50,13 @@ source "${THIS_FOLDER}/functions/utility.sh"
 if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
 # shellcheck source=./functions/govc.sh
 source "${THIS_FOLDER}/functions/govc.sh" \
-  -govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-  -url "${vcenter_host}" \
-  -username "${vcenter_username}" \
-  -password "${vcenter_password}" \
+	-govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
+	-url "${vcenter_host}" \
+	-username "${vcenter_username}" \
+	-password "${vcenter_password}" \
 	-use-cert "${use_cert}" \
 	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
-	
+
 #######################################
 #       Begin task
 #######################################
@@ -87,17 +87,17 @@ echo "--------------------------------------------------------"
 echo "Verify LGPO"
 echo "--------------------------------------------------------"
 if [[ -z ${lgpoPath} ]]; then
-  writeErr "No LGPO.zip file found in input."
-  echo "Contents of lgpo input:"
-  ls -al ${ROOT_FOLDER}/lgpo
-  exit 1
+	writeErr "No LGPO.zip file found in input."
+	echo "Contents of lgpo input:"
+	ls -al ${ROOT_FOLDER}/lgpo
+	exit 1
 fi
 
 if [[ ! -f ${lgpoPath} ]]; then
-  writeErr "LGPO path invalid = ${lgpoPath}"
-  echo "Contents of lgpo input:"
-  ls -al ${ROOT_FOLDER}/lgpo
-  exit 1
+	writeErr "LGPO path invalid = ${lgpoPath}"
+	echo "Contents of lgpo input:"
+	ls -al ${ROOT_FOLDER}/lgpo
+	exit 1
 fi
 
 #LGPO needs to be in the working folder (where stembuild is called fom)

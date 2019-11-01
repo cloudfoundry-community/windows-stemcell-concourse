@@ -13,14 +13,17 @@ function read_dom() {
 	IFS=$ORIGINAL_IFS
 	return $ret
 }
+
 function echoerr() {
 	echo "ERROR: $*"
 	date -u
 }
+
 function echosuccess() {
 	echo "[SUCCESS] $*"
 	date -u
 }
+
 function testAutoUnattend() {
 	local unattend_path="${1}"
 
@@ -77,6 +80,7 @@ function testAutoUnattend() {
 
 	return 0
 }
+
 function testCreateISO() {
 	local isoPath="${1}"
 	local extractISOPath="${2}"
@@ -107,6 +111,7 @@ function testCreateISO() {
 
 	return 0
 }
+
 function testUploadToDatastore() {
 	local iso_nm="${1}"
 	local finalIsoFilePath="${2}"
@@ -118,6 +123,7 @@ function testUploadToDatastore() {
 
 	return 0
 }
+
 function testCreateVMwithISO() {
 	local iPath="${1}"
 	local vm_nm="${2}"
@@ -163,6 +169,7 @@ function testCreateVMwithISO() {
 
 	return 0
 }
+
 function testSetBootOrder() {
 	local iPath="${1}"
 
@@ -173,6 +180,7 @@ function testSetBootOrder() {
 
 	return 0
 }
+
 function testConnectDevice() {
 	local iPath="${1}"
 	local device_name="${2}"
@@ -184,6 +192,7 @@ function testConnectDevice() {
 
 	return 0
 }
+
 function testPowerOnToInstallWindows() {
 	local iPath="${1}"
 
@@ -200,6 +209,7 @@ function testPowerOnToInstallWindows() {
 
 	return 0
 }
+
 function testEjectCDRom() {
 	local iPath="${1}"
 
@@ -208,6 +218,7 @@ function testEjectCDRom() {
 		return 1
 	fi
 }
+
 function testValidateAndPowerOff() {
 	local iPath="${1}"
 
@@ -216,6 +227,7 @@ function testValidateAndPowerOff() {
 		return 1
 	fi
 }
+
 function testCloneVM() {
 	local new_vm_name="${1}"
 	local vm_to_clone_name="${2}"
@@ -234,6 +246,7 @@ function testCloneVM() {
 		exit 1
 	fi
 }
+
 function testConstruct() {
 	local iPath="${1}"
 	local stembuildPath="${2}"
@@ -259,6 +272,7 @@ function testConstruct() {
 
 	return 0
 }
+
 function testPackage() {
 	local iPath="${1}"
 	local stembuildPath="${2}"

@@ -6,8 +6,8 @@ set -o errtrace
 export ROOT_FOLDER
 export THIS_FOLDER
 
-ROOT_FOLDER="$( pwd )"
-THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
+ROOT_FOLDER="$(pwd)"
+THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 
 #######################################
 #       Validate required
@@ -60,8 +60,8 @@ if [[ ! -z "${vcenter_ca_certs}" ]]; then
 			val=substr($0,RSTART,RLENGTH)
 			gsub(/- | -/,"",val)
 			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') > ${ROOT_FOLDER}/cert.crt
-	
+			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
+
 	cert_path=${ROOT_FOLDER}/cert.crt
 fi
 
@@ -102,16 +102,16 @@ cidr=$(subnetMaskToCidr "${subnet_mask}")
 
 # format the file in place (no clone)
 if ! formatAutoUnattend \
-			"${autounattendPath}" \
-			"${operating_system_name}" \
-			"${language}" \
-			"${product_key}" \
-			"${ip_address}/${cidr}" \
-			"${gateway_address}" \
-			"${dns_address}" \
-			"${vmware_tools_uri}" \
-			"${windows_update_module_uri}"; then
-	writeErr "formatting autounattend" 
+	"${autounattendPath}" \
+	"${operating_system_name}" \
+	"${language}" \
+	"${product_key}" \
+	"${ip_address}/${cidr}" \
+	"${gateway_address}" \
+	"${dns_address}" \
+	"${vmware_tools_uri}" \
+	"${windows_update_module_uri}"; then
+	writeErr "formatting autounattend"
 	exit 1
 else
 	echo "Done"
@@ -122,10 +122,10 @@ echo "Format OOBE unattend"
 echo "--------------------------------------------------------"
 # format the file in place (no clone)
 if ! formatUnattend \
-			"${unattendPath}" \
-			"${language}" \
-			"${admin_password}" ; then
-	writeErr "formatting OOBE unattend" 
+	"${unattendPath}" \
+	"${language}" \
+	"${admin_password}"; then
+	writeErr "formatting OOBE unattend"
 	exit 1
 else
 	echo "Done"
@@ -141,24 +141,24 @@ if ! destroyVM "${baseVMIPath}"; then
 fi
 
 if ! createVMwithISO "${base_vm_name}" \
-		"${vm_datastore}" \
-		"${vm_host}" \
-		"${vm_network}" \
-		${vm_cpu} \
-		${vm_memory_mb} \
-		${vm_disk_gb} \
-		"${vm_folder}" \
-		"${vm_guest_os_id}" \
-		"${iso_datastore}" \
-		"${iso_path_in_datastore}" \
-		"${vm_net_adapter}" \
-		"${esxi_version}" \
-		"${firmware_type}" \
-		"${disk_controller_type}" \
-		"${vm_resource_pool}" \
-		"${vcenter_datacenter}"; then
+	"${vm_datastore}" \
+	"${vm_host}" \
+	"${vm_network}" \
+	${vm_cpu} \
+	${vm_memory_mb} \
+	${vm_disk_gb} \
+	"${vm_folder}" \
+	"${vm_guest_os_id}" \
+	"${iso_datastore}" \
+	"${iso_path_in_datastore}" \
+	"${vm_net_adapter}" \
+	"${esxi_version}" \
+	"${firmware_type}" \
+	"${disk_controller_type}" \
+	"${vm_resource_pool}" \
+	"${vcenter_datacenter}"; then
 	writeErr "creating base VM"
-  	exit 1
+	exit 1
 else
 	echo "Done"
 fi

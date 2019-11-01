@@ -6,8 +6,8 @@ set -o errtrace
 export ROOT_FOLDER
 export THIS_FOLDER
 
-ROOT_FOLDER="$( pwd )"
-THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
+ROOT_FOLDER="$(pwd)"
+THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 
 #######################################
 #       Validate required
@@ -41,8 +41,8 @@ if [[ ! -z "${vcenter_ca_certs}" ]]; then
 			val=substr($0,RSTART,RLENGTH)
 			gsub(/- | -/,"",val)
 			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') > ${ROOT_FOLDER}/cert.crt
-	
+			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
+
 	cert_path=${ROOT_FOLDER}/cert.crt
 fi
 
@@ -55,10 +55,10 @@ source "${THIS_FOLDER}/functions/utility.sh"
 if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
 # shellcheck source=./functions/govc.sh
 source "${THIS_FOLDER}/functions/govc.sh" \
-  -govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-  -url "${vcenter_host}" \
-  -username "${vcenter_username}" \
-  -password "${vcenter_password}" \
+	-govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
+	-url "${vcenter_host}" \
+	-username "${vcenter_username}" \
+	-password "${vcenter_password}" \
 	-use-cert "${use_cert}" \
 	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
 
@@ -90,19 +90,19 @@ echo "Clone Base VM"
 echo "--------------------------------------------------------"
 
 if ! clonevm \
-		"${stembuild_vm_name}" \
-		"${vm_datastore}" \
-		"${vm_folder}" \
-		"${vm_host}" \
-		"${vm_resource_pool}" \
-		"${vm_network}" \
-		"${vm_cpu}" \
-		"${vm_memory_mb}" \
-		"${base_vm_name}"; then
-  writeErr "cloning base vm"
-  exit 1
+	"${stembuild_vm_name}" \
+	"${vm_datastore}" \
+	"${vm_folder}" \
+	"${vm_host}" \
+	"${vm_resource_pool}" \
+	"${vm_network}" \
+	"${vm_cpu}" \
+	"${vm_memory_mb}" \
+	"${base_vm_name}"; then
+	writeErr "cloning base vm"
+	exit 1
 else
-		echo "Done"
+	echo "Done"
 fi
 
 #######################################

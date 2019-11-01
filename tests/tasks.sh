@@ -3,7 +3,7 @@
 set -e
 set -o errtrace
 
-function cleanupTests(){
+function cleanupTests() {
 	#reset the autounattend file to template
 	sudo rm "${ROOT_FOLDER}/autounattend/autounattend.xml"
 
@@ -12,7 +12,7 @@ function cleanupTests(){
 
 	#remove ISO file
 	sudo rm /tmp/final-iso.iso
-	
+
 	sudo rm "${ROOT_FOLDER}/LGPO.zip"
 
 	#remove stemcell

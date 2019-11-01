@@ -6,8 +6,8 @@ set -o errtrace
 export ROOT_FOLDER
 export THIS_FOLDER
 
-ROOT_FOLDER="$( pwd )"
-THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
+ROOT_FOLDER="$(pwd)"
+THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 
 #######################################
 #       Validate required
@@ -36,8 +36,8 @@ if [[ ! -z "${vcenter_ca_certs}" ]]; then
 			val=substr($0,RSTART,RLENGTH)
 			gsub(/- | -/,"",val)
 			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') > ${ROOT_FOLDER}/cert.crt
-	
+			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
+
 	cert_path=${ROOT_FOLDER}/cert.crt
 fi
 
@@ -50,10 +50,10 @@ source "${THIS_FOLDER}/functions/utility.sh"
 if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
 # shellcheck source=./functions/govc.sh
 source "${THIS_FOLDER}/functions/govc.sh" \
-  -govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-  -url "${vcenter_host}" \
-  -username "${vcenter_username}" \
-  -password "${vcenter_password}" \
+	-govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
+	-url "${vcenter_host}" \
+	-username "${vcenter_username}" \
+	-password "${vcenter_password}" \
 	-use-cert "${use_cert}" \
 	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
 
@@ -73,11 +73,14 @@ if ! exists=$(vmExists "${baseVMIPath}"); then
 	exit 1
 fi
 
-[[ ${exists} == "false" ]] && (writeErr "no base VM found at path ${baseVMIPath}"; exit 1)
+[[ ${exists} == "false" ]] && (
+	writeErr "no base VM found at path ${baseVMIPath}"
+	exit 1
+)
 
 if ! powerOnVM "${baseVMIPath}"; then
-  writeErr "powering on VM"
-  exit 1
+	writeErr "powering on VM"
+	exit 1
 else
 	echo "Done"
 fi
@@ -86,12 +89,12 @@ echo "--------------------------------------------------------"
 echo "Running windows update"
 echo "--------------------------------------------------------"
 echo -ne "|"
-for ((i = 1 ; i <= 3 ; i++)); do
+for ((i = 1; i <= 3; i++)); do
 	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"); then
 		writeErr "could not run windows update"
 		exit 1
 	fi
-  
+
 	if [[ ${exitCode} == "1" ]]; then
 		writeErr "windows update process exited with error"
 		exit 1
@@ -108,8 +111,8 @@ done
 echo "|"
 
 if ! powerOffVM "${baseVMIPath}"; then
-  writeErr "powering off VM"
-  exit 1
+	writeErr "powering off VM"
+	exit 1
 else
 	echo "Done"
 fi

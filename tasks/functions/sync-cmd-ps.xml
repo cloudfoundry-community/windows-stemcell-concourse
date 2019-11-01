@@ -1,1 +1,0 @@
-<RunSynchronousCommand wcm:action="add"><Order>{{order}}</Order><Description>{{description}}</Description><Path>powershell -NoProfile -Command "{{path}}"</Path><WillReboot>{{will_reboot}}</WillReboot></RunSynchronousCommand>

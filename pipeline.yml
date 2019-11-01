@@ -32,14 +32,7 @@ resources:
     product_slug: stemcells-windows-server
     product_version: ((os-version)).(.*)
     sort_by: semver
-
-#- name: stembuild-release
-#  type: github-release
-#  source:
-#    owner: cloudfoundry-incubator
-#    repository: stembuild
-#    tag_filter: ((os-version)).(.*)
-
+		
 - name: govc
   type: github-release
   source:

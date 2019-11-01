@@ -26,10 +26,8 @@ function formatAutoUnattend(){
   local ip_address="${5}"
   local gateway_address="${6}"
   local dns_address="${7}"
-  local admin_password="${8}"
-  local oobe_unattend_uri="${9}"
-  local vmware_tools_uri="${10}"
-  local windows_update_module_uri="${11}"
+  local vmware_tools_uri="${8}"
+  local windows_update_module_uri="${9}"
 
   windowTempPath='C:/Windows/Temp' #assuming all commands are run in powershell, so / will be converted to \
   command_cnt=1
@@ -47,7 +45,7 @@ function formatAutoUnattend(){
 	fi
   
   (( command_cnt++ ))
-  if ! sync_commands=${sync_commands}$(buildDownloadCommand ${command_cnt} "Download OOBE Unattend" "${oobe_unattend_uri}" "c:/windows/system32/sysprep/unattend.xml" Never); then
+  if ! sync_commands=${sync_commands}$(buildPowershellCommand ${command_cnt} "Copy OOBE Unattend" "copy a:/unattend.xml c:/windows/system32/sysprep/unattend.xml" Never); then
 		writeErr "Could not set sync command for downloading OOBE unattend"
 		return 1
 	fi
@@ -57,12 +55,6 @@ function formatAutoUnattend(){
   (( command_cnt++ ))
   if ! sync_commands=${sync_commands}$(buildPowershellCommand ${command_cnt} "Install VMWare Tools" "Invoke-Command -ScriptBlock {Start-Process ${windowTempPath}/vmware-tools.exe -ArgumentList '/S /v \"/qn REBOOT=R\"' -Wait}" Never); then
 		writeErr "Could not set sync command for installing VMWare tools"
-		return 1
-	fi
-
-  (( command_cnt++ ))
-  if ! sync_commands=${sync_commands}$(buildPowershellCommand ${command_cnt} "Format user unattend" '(Get-Content c:/windows/system32/sysprep/unattend.xml) | ForEach-Object {$_ = $_.Replace('\''{{ADMINISTRATOR_PASSWORD}}'\'','\'''${admin_password}''\'');$_} | Set-Content c:/windows/system32/sysprep/unattend.xml' Never); then
-		writeErr "Could not set sync command for formatting unattend"
 		return 1
 	fi
   
@@ -120,6 +112,28 @@ function formatAutoUnattend(){
 			writeErr "could not insert product key into ${unattend_path}"
 			return 1
 		fi
+	fi
+
+	return 0
+}
+
+######################################
+# Description: Formats the OOBE unattend.xml replacing placeholders with real
+# values.
+# 	
+# Arguments: 
+#		
+#######################################
+function formatUnattend(){
+	local unattend_path="${1}"
+	local language="${2}"
+	local admin_password="${3}"
+  
+	if ! sed -i -e "s|{{ADMINISTRATOR_PASSWORD}}|${admin_password}|" \
+			-e "s|{{LANGUAGE}}|${language}|" \
+			${unattend_path}; then
+		writeErr "could not format ${unattend_path} correctly with required params"
+		return 1
 	fi
 
 	return 0

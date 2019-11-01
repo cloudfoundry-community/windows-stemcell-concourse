@@ -43,7 +43,6 @@ vm_resource_pool=${vm_resource_pool:=''}
 product_key=${product_key:=''}
 subnet_mask=${subnet_mask:='255.255.255.0'}
 language=${language:='en-US'}
-oobe_unattend_uri=${oobe_unattend_uri:='https://raw.githubusercontent.com/cloudfoundry-community/windows-stemcell-concourse/master/assets/unattend.xml'}
 vmware_tools_uri=${vmware_tools_uri:='https://packages.vmware.com/tools/releases/10.3.10/windows/x64/VMware-tools-10.3.10-12406962-x86_64.exe'}
 windows_update_module_uri=${windows_update_module_uri:='http://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc/file/41459/25/PSWindowsUpdate.zip'}
 vm_guest_os_id=${vm_guest_os_id:='windows9Server64Guest'}
@@ -110,11 +109,23 @@ if ! formatAutoUnattend \
 			"${ip_address}/${cidr}" \
 			"${gateway_address}" \
 			"${dns_address}" \
-			"${admin_password}" \
-			"${oobe_unattend_uri}" \
 			"${vmware_tools_uri}" \
 			"${windows_update_module_uri}"; then
 	writeErr "formatting autounattend" 
+	exit 1
+else
+	echo "Done"
+fi
+
+echo "--------------------------------------------------------"
+echo "Format OOBE unattend"
+echo "--------------------------------------------------------"
+# format the file in place (no clone)
+if ! formatUnattend \
+			"${unattendPath}" \
+			"${language}" \
+			"${admin_password}" ; then
+	writeErr "formatting OOBE unattend" 
 	exit 1
 else
 	echo "Done"

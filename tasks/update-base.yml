@@ -6,7 +6,7 @@ inputs:
 - name: govc
 
 params:
-  vcenter_url: ((vcenter-url))
+  vcenter_host: ((vcenter-host))
   vcenter_username: ((vcenter-username))
   vcenter_password: ((vcenter-password))
   vcenter_datacenter: ((vcenter-datacenter))

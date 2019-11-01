@@ -241,7 +241,7 @@ function testConstruct() {
 
 	cp "${lgpoPath}" ./LGPO.zip
 
-	args="-vm-ip '${ip_address}' -vm-username 'administrator' -vm-password '${admin_password}'  -vcenter-url '${vcenter_url}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}' -vcenter-ca-certs '${cert_path}'"
+	args="-vm-ip '${ip_address}' -vm-username 'administrator' -vm-password '${admin_password}'  -vcenter-url '${vcenter_host}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}' -vcenter-ca-certs '${cert_path}'"
 
 	cmd="sudo ${stembuildPath} construct ${args}"
 
@@ -263,7 +263,7 @@ function testPackage() {
 	local iPath="${1}"
 	local stembuildPath="${2}"
 
-	args="-vcenter-url '${vcenter_url}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}' -vcenter-ca-certs '${cert_path}'"
+	args="-vcenter-url '${vcenter_host}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}' -vcenter-ca-certs '${cert_path}'"
 
 	cmd="sudo ${stembuildPath} package ${args}"
 
@@ -292,7 +292,7 @@ source "${THIS_FOLDER}/functions/autounattend.sh"
 # shellcheck source=../tasks/functions/govc.sh
 source "${THIS_FOLDER}/functions/govc.sh" \
 	-govc "sudo -E $(find ${ROOT_FOLDER}/govc/govc_linux_* 2>/dev/null | head -n1)" \
-	-url "${vcenter_url}" \
+	-url "${vcenter_host}" \
 	-username "${vcenter_username}" \
 	-password "${vcenter_password}" \
 	-use-cert "${use_cert}" \

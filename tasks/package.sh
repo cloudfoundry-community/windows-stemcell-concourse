@@ -12,7 +12,7 @@ THIS_FOLDER="$( dirname "${BASH_SOURCE[0]}" )"
 #######################################
 #       Validate required
 #######################################
-[[ -z "${vcenter_url}" ]] && (echo "vcenter_url is a required value" && exit 1)
+[[ -z "${vcenter_host}" ]] && (echo "vcenter_host is a required value" && exit 1)
 [[ -z "${vcenter_username}" ]] && (echo "vcenter_username is a required value" && exit 1)
 [[ -z "${vcenter_password}" ]] && (echo "vcenter_password is a required value" && exit 1)
 [[ -z "${vcenter_datacenter}" ]] && (echo "vcenter_datacenter is a required value" && exit 1)
@@ -52,7 +52,7 @@ if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER
 # shellcheck source=./functions/govc.sh
 source "${THIS_FOLDER}/functions/govc.sh" \
   -govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-  -url "${vcenter_url}" \
+  -url "${vcenter_host}" \
   -username "${vcenter_username}" \
   -password "${vcenter_password}" \
 	-use-cert "${use_cert}" \
@@ -85,7 +85,7 @@ fi
 echo "--------------------------------------------------------"
 echo "Start package"
 echo "--------------------------------------------------------"
-args="-vcenter-url '${vcenter_url}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}'"
+args="-vcenter-url '${vcenter_host}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}'"
 
 [[ ! -z ${cert_path} ]] && args="${args} -vcenter-ca-certs '${cert_path}'"
 

@@ -18,7 +18,7 @@ s3:
 ###########################################
 #REQUIRED PARAMS
 ###########################################
-vcenter-url: "" #The DNS or IP address to vcenter server
+vcenter-host: "" #The DNS or IP address to vcenter server
 vcenter-username: "" #User to interact with vcenter server
 vcenter-password: "" #Password for vcenter user to work as
 vcenter-datacenter: "" #Vsphere datacenter name

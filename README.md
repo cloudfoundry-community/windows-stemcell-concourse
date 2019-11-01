@@ -89,7 +89,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
 | Variable Name                   | Value                                               | Required  | Example Values         |
 | ------------------------------- | --------------------------------------------------- |:---------:| ---------------------- |
-| vcenter-url | The DNS or IP address to vcenter server. Do not include http(s):// | Yes | myvcenter.domain.com |
+| vcenter-host | The DNS or IP address to vcenter server. Do not include http(s):// | Yes | myvcenter.domain.com |
 | vcenter-username | User to interact with vcenter server. Needs the permission to create/config/remove VMs. | Yes | (string) |
 | vcenter-password | Password for vcenter user. | Yes | (string) |
 | vcenter-datacenter | Vsphere datacenter name, for placing VMs and data. Do not include a slash(/). | Yes | (alphanumeric, underscore, dash) |

@@ -151,3 +151,23 @@ Windows and product licenses are like PB&J. They always go together. There are d
 
 **Why is the iso file hardcoded in pipeline yaml?**
 It is assumed you will have multiple iso's. So as to not get things mixed up, the pipeline has hardcoded this.
+
+## Development
+Run the [bats](https://github.com/bats-core/bats-core) tests using Docker to approximate the same environment as Concourse. To execute the tests you need to first build the container then run it:
+
+```bash
+$ docker build -t ubuntu-bats .
+$ docker run -it -v "$(pwd):/code" ubuntu-bats /code/tests
+```
+
+If you'd rather reuse the same container instance to run the tests over and over again, just start an interactive terminal and override the entrypoint:
+
+```bash
+$ docker run -it --entrypoint /bin/bash -v "$(pwd):/code" ubuntu-bats
+```
+
+Then from the container execute bats manually:
+
+```bash
+$ /usr/local/bin/bats /code/tests/*.bats
+```

@@ -581,77 +581,49 @@ function ejectAndRemoveFloppyDrive() {
 }
 
 ######################################
+# Description: Initializes govc for connectivity
+#
+# Arguments:
+#
+#######################################
+function initGovc() {
+	local govc="${1}"
+	local vcenter_host="${2}"
+	local vcenter_username="${3}"
+	local vcenter_password="${4}"
+	local use_cert="${5}"	
+	local cert_path="${6}"
 
-vcenter_url=""
-vcenter_username=""
-vcenter_password=""
-govc=""
-cert_path=""
-use_cert=""
+	if [ -z "${govc}" ]; then
+		writeErr "govc binary not found"
+		exit 1
+	fi
 
-echo "Initializing govc"
+	if ! command -v "${govc}" >/dev/nulll; then
+		writeErr "govc binary invalid"
+		exit 1
+	fi
 
-while [ $# -ne 0 ]; do
-	name="$1"
-	case "$name" in
-	-govc)
-		shift
-		govc="$1"
-		;;
-	--url | -[Uu]rl)
-		shift
-		vcenter_url="$1"
-		;;
-	--username | -[Uu]sername)
-		shift
-		vcenter_username="$1"
-		;;
-	--password | -[Pp]assword)
-		shift
-		vcenter_password="$1"
-		;;
-	-[Cc]ert-path)
-		shift
-		cert_path="$1"
-		;;
-	-[Uu]se-cert)
-		shift
-		use_cert="$1"
-		;;
-	esac
+	export GOVC_URL=${vcenter_host}
+	export GOVC_USERNAME=${vcenter_username}
+	export GOVC_PASSWORD=${vcenter_password}
 
-	shift
-done
+	if [[ "${use_cert}" == "true" ]]; then
+		export GOVC_INSECURE=0
+		export GOVC_TLS_CA_CERTS=${cert_path}
+	else
+		export GOVC_INSECURE=1
+	fi
 
-if [ -z ${govc} ]; then
-	writeErr "govc binary not found"
-	exit 1
-fi
+	#test that we have a good connection
+	if ! ret=$(${govc} about); then
+		writeErr "could not connect to vcenter with provided info () - ${ret}"
 
-if ! command -v ${govc} >/dev/nulll; then
-	writeErr "govc binary invalid"
-	exit 1
-fi
+		exit 1
+	fi
 
-export GOVC_URL=${vcenter_url}
-export GOVC_USERNAME=${vcenter_username}
-export GOVC_PASSWORD=${vcenter_password}
-
-if [[ "${use_cert}" == "true" ]]; then
-	export GOVC_INSECURE=0
-	export GOVC_TLS_CA_CERTS=${cert_path}
-else
-	export GOVC_INSECURE=1
-fi
-
-#test that we have a good connection
-if ! ret=$(${govc} about); then
-	writeErr "could not connect to vcenter with provided info () - ${ret}"
-
-	exit 1
-fi
-
-if [[ ${ret} == *"specify an"* ]]; then
-	writeErr "${ret}"
-	exit 1
-fi
+	if [[ ${ret} == *"specify an"* ]]; then
+		writeErr "${ret}"
+		exit 1
+	fi
+}

@@ -42,21 +42,28 @@ if [[ ! -z "${vcenter_ca_certs}" ]]; then
 	cert_path=${ROOT_FOLDER}/cert.crt
 fi
 
-#######################################
-#       Source helper functions
-#######################################
-# shellcheck source=./functions/utility.sh
+echo "--------------------------------------------------------"
+echo "Initializing govc"
+echo "--------------------------------------------------------"
+# shellcheck source=tasks/functions/utility.sh
 source "${THIS_FOLDER}/functions/utility.sh"
 
 if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
-# shellcheck source=./functions/govc.sh
-source "${THIS_FOLDER}/functions/govc.sh" \
-	-govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-	-url "${vcenter_host}" \
-	-username "${vcenter_username}" \
-	-password "${vcenter_password}" \
-	-use-cert "${use_cert}" \
-	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
+
+# shellcheck source=tasks/functions/govc.sh
+source "${THIS_FOLDER}/functions/govc.sh"
+if ! initGovc \
+	"${ROOT_FOLDER}/govc/govc_linux_amd64" \
+	"${vcenter_host}" \
+	"${vcenter_username}" \
+	"${vcenter_password}" \
+	"${use_cert}" \
+	"${cert_path}"; then
+	writeErr "error initializing govc"
+	exit 1
+else
+	echo "Done"
+fi
 
 #######################################
 #       Begin task

@@ -153,7 +153,8 @@ Windows and product licenses are like PB&J. They always go together. There are d
 It is assumed you will have multiple iso's. So as to not get things mixed up, the pipeline has hardcoded this.
 
 ## Docker
+Building a new base image for Concourse jobs or running bats tests:
 
 ```bash
-$ docker build -t ubuntu-bats .
+$ docker build -t windows-stemcell-concourse . 
 ```

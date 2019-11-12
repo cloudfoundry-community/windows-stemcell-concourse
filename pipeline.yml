@@ -11,10 +11,10 @@ resource_types:
     tag: latest
 
 resources:
-- name: ubuntu-image
+- name: windows-stemcell-concourse-image
   type: docker-image
   source:
-    repository: ubuntu
+    repository: cfcommunity/windows-stemcell-concourse
   
 - name: pipeline-resources
   type: git
@@ -114,7 +114,7 @@ os-params: &os-params
 jobs:
   - name: create-base
     plan:
-      - get: ubuntu-image
+      - get: windows-stemcell-concourse-image
       - get: pipeline-resources
       - get: govc
         params:
@@ -123,7 +123,7 @@ jobs:
       - get: autounattend
       - task: create-base
         file: pipeline-resources/tasks/create-base.yml
-        image: ubuntu-image
+        image: windows-stemcell-concourse-image
         input_mapping:
           govc: govc
           autounattend: autounattend
@@ -135,7 +135,7 @@ jobs:
 
   - name: update-base
     plan:
-      - get: ubuntu-image
+      - get: windows-stemcell-concourse-image
       - get: pipeline-resources
       - get: govc
         params:
@@ -148,7 +148,7 @@ jobs:
             - stembuild-linux-*
       - task: update-base
         file: pipeline-resources/tasks/update-base.yml
-        image: ubuntu-image
+        image: windows-stemcell-concourse-image
         input_mapping:
           govc: govc
           pipeline-resources: pipeline-resources
@@ -158,7 +158,7 @@ jobs:
 
   - name: clone-base
     plan:
-      - get: ubuntu-image
+      - get: windows-stemcell-concourse-image
       - get: pipeline-resources
         trigger: true
         passed: [create-base]
@@ -172,7 +172,7 @@ jobs:
             - stembuild-linux-*
       - task: clone-base
         file: pipeline-resources/tasks/clone-base.yml
-        image: ubuntu-image
+        image: windows-stemcell-concourse-image
         input_mapping:
           govc: govc
           stembuild: stembuild-release
@@ -183,7 +183,7 @@ jobs:
         
   - name: construct
     plan:
-      - get: ubuntu-image
+      - get: windows-stemcell-concourse-image
       - get: pipeline-resources
         trigger: true
         passed: [clone-base]
@@ -198,7 +198,7 @@ jobs:
             - stembuild-linux-*
       - task: construct
         file: pipeline-resources/tasks/construct.yml
-        image: ubuntu-image
+        image: windows-stemcell-concourse-image
         input_mapping:
           stembuild: stembuild-release
           lgpo: lgpo
@@ -211,7 +211,7 @@ jobs:
 
   - name: package
     plan:
-      - get: ubuntu-image
+      - get: windows-stemcell-concourse-image
       - get: pipeline-resources
         trigger: true
         passed: [construct]
@@ -225,7 +225,7 @@ jobs:
             - stembuild-linux-*
       - task: package
         file: pipeline-resources/tasks/package.yml
-        image: ubuntu-image
+        image: windows-stemcell-concourse-image
         input_mapping:
           stembuild: stembuild-release
           govc: govc

@@ -7,54 +7,6 @@
 #
 
 ######################################
-# Description: Installs file system tools used to create a floppy img
-#
-# Arguments:
-#		None
-#######################################
-function installFsTools() {
-	apt-get -y install dosfstools mtools
-
-	return 0
-}
-
-######################################
-# Description: Installs xmlstartlet to manipulate xml docs
-#
-# Arguments:
-#		None
-#######################################
-function installXmlstarlet() {
-	apt-get -y install xmlstarlet
-
-	return 0
-}
-
-######################################
-# Description:
-#
-# Arguments:
-#		None
-#######################################
-function installcurl() {
-	apt-get -y install curl
-
-	return 0
-}
-
-######################################
-# Description:
-# 	Install jq
-# Arguments:
-#		None
-#######################################
-function installjq() {
-	apt-get -y install jq
-
-	return 0
-}
-
-######################################
 # Description:
 #
 # Arguments:
@@ -146,14 +98,3 @@ function parseStembuildVersion() {
 
 	return 0
 }
-
-#######################################
-#       Install Dependencies
-#######################################
-apt-get update
-#sudo apt-get install software-properties-common
-#add-apt-repository universe
-command -v jq >/dev/null 2>&1 || installjq
-command -v xml >/dev/null 2>&1 || installXmlstarlet
-command -v mcopy >/dev/null 2>&1 || installFsTools
-command -v curl >/dev/null 2>&1 || installcurl

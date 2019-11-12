@@ -1,10 +1,10 @@
 # Windows Stemcell Automation
 
-Provides tasks to create a Windows stemcell for Cloud Foundry, in VSphere. The tasks are intended to be open and extensible, as bash scripts. While life becomes a little more managable using [concourse](https://concourse-ci.org) for automation of these tasks, everything is arranged in a way that you could manually run them or plug them in to some other automation tool. The job of each task follows Pivotal's recommended way of creating a base image, cloning it, and running their stembuild tool on it. Read more about "Creating a Windows Stemcell for vSphere Using stembuild" in [their docs](https://docs.pivotal.io/platform/application-service-windows/2-7/create-vsphere-stemcell-automatically.html).
+Provides tasks to create a Windows stemcell for Cloud Foundry, in VSphere. The tasks are intended to be open and extensible as bash scripts. While life becomes a little more managable using [concourse](https://concourse-ci.org) for automation of these tasks, everything is arranged in a way that you could manually run them or plug them in to some other automation tool. The job of each task follows Pivotal's recommended way of creating a base image, cloning it, and running their stembuild tool on it. Read more about "Creating a Windows Stemcell for vSphere Using stembuild" in [their docs](https://docs.pivotal.io/platform/application-service-windows/2-7/create-vsphere-stemcell-automatically.html).
 
 One notable design choice of this approach is the use of the [Windows answer file](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/automate-windows-setup) (also known as the autounattend file). An alternate option to this would be to use [packer cli](https://github.com/hashicorp/packer) made by Hashicorp. This project is focused on the Winodws operating system solely and wants to follow Microsoft's recommended approach to automating Windows installs. There are many many customizations that one could want to do to a Windows install and the autounattend approach is a guarantee to offer all possibilities.
 
-That said, the autounattend xml is complex and confusing. So attempts are made to abstract some of that away by pulling out specific settings as pipeline variables and templatizing the XML.
+That said, the autounattend xml is complex and confusing. So attempts are made to abstract most of that away by pulling out specific settings as pipeline variables and templatizing the XML.
 
 ![Concourse screenshot](screenshot.png "Concourse screenshot")
 
@@ -19,7 +19,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
   │   │   ├── autounattend.sh - For parsing the autounattend xml template and replacing placeholders with values supplied
   │   │   ├── govc.sh - Interpreting functions made available by the vsphere api with supplied values
   │   │   ├── .xml - Templates to be used into the templates :)
-  │   │   └── utility.sh - Odd global functions for formatting and installing dependencies
+  │   │   └── utility.sh - Odd global functions for formatting
   │   ├── clone-base.sh - Take the resulting VM of the `create-base` task and clone it, to be used for a specfic stembuild version
   │   ├── clone-base.yml - The concourse definition of the task
   │   ├── construct.sh - Take the resulting VM of the `clone-base` task, run stembuild to harden it for Cloud Foundry, and sysprep it
@@ -34,7 +34,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
   │   ├── stemcell - Holds the final stemcell file
   │   ├── concourse.sh - Run the concourse tasks, without creating the pipeline using the `fly execute` command
   │   ├── functions.sh - Mimic what all the tasks do, calling the appropriate function in `/tasks/functions`
-  │   ├── tasks.sh - Mimic what all the tasks do, calling the appropriate .sh script in `/tasks`
+  │   └── tasks.sh - Mimic what all the tasks do, calling the appropriate .sh script in `/tasks`
   └── pipeline.yml - The concourse pipeline definition
   └── vars-min.yml - A template for providing the minimum required values to the concourse pipeline
   ```
@@ -43,23 +43,33 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
 ### Setting things up
 
-  The pipeline definition offers different ways to store the needed assets. In either S3 compatible, AWS S3, Google Cloud Store, or Azure Blob Store. An example of S3 compatible is [Minio](https://min.io) or [Dell EMC ECS Object Store](https://www.dellemc.com/en-us/storage/ecs/index.htm). Each pipeline job is run on an [Ubuntu image](https://hub.docker.com/_/ubuntu) that has the required tools already installed (curl, jq, dosfstools, mtools, xmlstarlet). There are a few assets needed to run the pipeline...
+  Each pipeline job is run on a pre-built image distributed from the [cf-community docker hub](https://hub.docker.com/r/cfcommunity/windows-stemcell-concourse). Have a look at the Dockerfile to see what packages are baked in. Outside of what can be preinstalled in the image, there are a few assets the pipeline needs at run time...
 
-  1. A current Windows image. Testing was done with Windows Server 2019 but you could also use Server 1709 or Server 1803. Windows ISO images are not distributable, so you will need to manually add it to the vSphere datastore. Note within the store, the pipeline is expecting the ISO to be within a datastore folder named `Win-Stemcell-ISO`. For testing you can download the [trial Windows Server 2019 ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019).
-
-  1. Autounattend template xml with placeholders. During the `create-base` task the placeholders are filled with the provided pipeline values and the xml is combined with the ISO. Find this in the /assets folder. Read more about all the possabilities [in the docs](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend). Note within the store, the pipeline is expecting the xml to be within a folder named `autounattend`.
-
-  1. Unattend template xml with placeholders. During the install of Windows, there a different passes made. Each pass has a specific context and permission for completing the overall install. This template is used during the out of box experience (oobe) pass to create the administrator account and set its password. Find this in the /assets folder. The task will download this file when needed.
+  1. A current Windows image. Testing was done with Windows Server 2019 but you could also use Server 1709 or Server 1803. Windows ISO images are not distributable. You will need to manually add it to the vSphere datastore. Note within the store, the pipeline is expecting the ISO to be within a datastore folder named `Win-Stemcell-ISO`. For testing you can download the [trial Windows Server 2019 ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019).
 
   1. Govc executable, see the [docs](https://github.com/vmware/govmomi) for more detail. The pipeleline is set to download the latest stable 0.21 release.
 
-  1. The Local Group Policy Object(LGPO) Utility. See the [docs](https://blogs.technet.microsoft.com/secguide/2016/01/21/lgpo-exe-local-group-policy-object-utility-v1-0/) for more detail. This is a non-distributable tool, so you will need to [download LGPO.zip here](https://www.microsoft.com/en-us/download/details.aspx?id=55319) and manually add it to the blob store. Note within the store, the pipeline is expecting the zip to be within a folder named `lgpo`.
+  1. The Local Group Policy Object(LGPO) Utility. See the [docs](https://blogs.technet.microsoft.com/secguide/2016/01/21/lgpo-exe-local-group-policy-object-utility-v1-0/) for more detail. The pipeline is set to download the latest release.
 
-  1. Stembuild executable, see the [docs](https://github.com/cloudfoundry-incubator/stembuild) for more detail. The pipeleline is set to download the latest stable release from Pivotal, that matches the ISO operating system version (1709, 1803, 2019). There is also an option to download the same asset from the project's GitHub releases.
+  1. Stembuild executable, see the [docs](https://github.com/cloudfoundry-incubator/stembuild) for more detail. The pipeleline is set to download the latest stable release from GitHub. It's going to get a compatible version to the ISO operating system version (1709, 1803, 2019). There is also an option to download the same asset from the Pivotal network (PivNet).
+
+### Running in an offline environment
+
+The pipeline assumes your Concourse workers have access to the internet. If thats not the case, you can download the needed assets to a local S3 compatible bucket can adjust the pipeline to retrieve from there. You'll need to made the following available:
+
+- Govc
+- LGPO
+- Stembuild
+- A clone of this repo
+
+Additionally you'll need to add the docker images to a local repository and adjust the pipeline to retrieve the local image. The needed images are:
+
+- cfcommunity/windows-stemcell-concourse
+- pivotalservices/concourse-curl-resource
 
 ### Adding the pipeline
 
-  1. You'll need 2 files from this repo, `pipeline.yml` and `vars-min.yml`. You can either clone the repo `git clone https://github.com/cloudfoundry-community/windows-stemcell-concourse` or just grab the raw content.
+  You'll need 2 files from this repo, `pipeline.yml` and `vars-min.yml`.
 
   1. The `vars-min.yml` file will feed values to the pipeline. This yml is a minimum to get started, read below for additional values.
 
@@ -131,6 +141,14 @@ There are two ways to watch for a new stembuild release. Pivotal customers can h
 
 More details about monthly stemcell upgrade can be found in the [creating vsphere stemcell with stembuild](https://docs.pivotal.io/pivotalcf/2-6/windows/create-vsphere-stemcell-automatically.html#upgrade-stemcell) documentation.
 
+## Docker
+
+Building a new base image for Concourse jobs or running bats tests:
+
+```bash
+docker build -t windows-stemcell-concourse .
+```
+
 ## Helps & Docs
 
 There is a helper powershell file named `commands.ps1`. This has example scripts for setting up an S3 bucket in AWS (using their powershell commands), example concourse command to set the pipeline, and an example script to retrieve VCenter certificate.
@@ -138,23 +156,13 @@ There is a helper powershell file named `commands.ps1`. This has example scripts
 ## Debugging and KB
 
 **Following Windows install progress**
-When the install get started, open the VM in remote console, grab some popcorn, and watch the install go. The VM will shut down when everything is finished. Don't click or modify anything when windows popup.
+When the install get started, open the VM in remote console, grab some popcorn, and watch the install go. The VM will shut down when everything is finished. There is no need for any interaction during the install process - just watch.
 
 **Windows install hangs**
-Log in to VSphere and open the VM in the remote console. You should be greeted with a window describing why the install couldn't finish.
-
-**I see the log message: creating filesystem that does not conform to ISO-9660**
-This message is a result of how the ISO is being regenerated with the new autounattend. Windows allows things that are not always viewed as best practice when it comes to a Linux filesystem. To learn about each param being used during ISO creating read [the genisoimage manpage](https://manpages.debian.org/buster/genisoimage/genisoimage.1.en.html). Specifically look at the `-R` and `-relaxed-filenames` switches.
+Log in to VSphere and open the VM in remote console. You should be greeted with a window describing why the install couldn't finish. Microsoft has published a helpful [troubleshooting guide](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/deployment-troubleshooting-and-log-files) to help debug automated installs. Of note, is the `Setupact.log` files. Located at %windir%\panther and %windir%\panther\unattendGC within the base-vm.
 
 **What about a product license?**
 Windows and product licenses are like PB&J. They always go together. There are definatly [provisions in the unattend file](https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-setup-userdata-productkey-key) for just such a thing. This project makes the assumption that the resulting stemcell image will be deployed on Cloud Foundry for Windows, which already has the ability to provide licenses or key management servers. You can extend the provided xml template and add in things like this, as needed.
 
 **Why is the iso file hardcoded in pipeline yaml?**
 It is assumed you will have multiple iso's. So as to not get things mixed up, the pipeline has hardcoded this.
-
-## Docker
-Building a new base image for Concourse jobs or running bats tests:
-
-```bash
-$ docker build -t windows-stemcell-concourse . 
-```

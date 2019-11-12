@@ -1,9 +1,10 @@
 resource_types:
-- name: pivnet
-  type: docker-image
-  source:
-    repository: pivotalcf/pivnet-resource
-    tag: latest-final
+#- name: pivnet
+#  type: docker-image
+#  source:
+#    repository: pivotalcf/pivnet-resource
+#    tag: latest-final
+
 - name: file-url
   type: docker-image
   source:
@@ -15,30 +16,28 @@ resources:
   type: docker-image
   source:
     repository: cfcommunity/windows-stemcell-concourse
+    tag: latest
   
 - name: pipeline-resources
   type: git
   source:
     uri: ((tasks.uri))
     branch: master
-    #username: ((tasks.username))
-    #password: ((tasks.password))
-    #skip_ssl_verification: true
-
-- name: stembuild-release
-  type: pivnet
-  source:
-    api_token: ((pivnet-token))
-    product_slug: stemcells-windows-server
-    product_version: ((os-version)).(.*)
-    sort_by: semver
 
 #- name: stembuild-release
-#  type: github-release
+#  type: pivnet
 #  source:
-#    owner: cloudfoundry-incubator
-#    repository: stembuild
-#    tag_filter: ((os-version)).(.*)
+#    api_token: ((pivnet-token))
+#    product_slug: stemcells-windows-server
+#    product_version: ((os-version)).(.*)
+#    sort_by: semver
+
+- name: stembuild-release
+  type: github-release
+  source:
+    owner: cloudfoundry-incubator
+    repository: stembuild
+    tag_filter: ((os-version)).(.*)
 
 - name: govc
   type: github-release
@@ -58,9 +57,6 @@ resources:
   source:
     uri: ((tasks.uri))
     branch: master
-    #username: ((tasks.username))
-    #password: ((tasks.password))
-    #skip_ssl_verification: true
 
 - name: stemcell-store
   type: s3

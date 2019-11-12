@@ -14,7 +14,7 @@ resources:
 - name: windows-stemcell-concourse-image
   type: docker-image
   source:
-    repository: shawnneal/windows-stemcell-concourse
+    repository: cfcommunity/windows-stemcell-concourse
   
 - name: pipeline-resources
   type: git

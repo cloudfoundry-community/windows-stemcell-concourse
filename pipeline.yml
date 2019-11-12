@@ -23,7 +23,7 @@ resources:
   source:
     uri: ((tasks.uri))
     branch: master
-
+  check_every: 1h
 #- name: stembuild-release
 #  type: pivnet
 #  source:
@@ -38,6 +38,7 @@ resources:
     owner: cloudfoundry-incubator
     repository: stembuild
     tag_filter: ((os-version)).(.*)
+  check_every: 1h  
 
 - name: govc
   type: github-release
@@ -45,7 +46,7 @@ resources:
     owner: vmware
     repository: govmomi
     tag_filter: 0.21.(.*)
-
+  check_every: 1h
 - name: lgpo
   type: file-url
   source:
@@ -57,7 +58,7 @@ resources:
   source:
     uri: ((tasks.uri))
     branch: master
-
+  check_every: 1h
 - name: stemcell-store
   type: s3
   source:

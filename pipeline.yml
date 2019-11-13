@@ -37,10 +37,9 @@ resources:
   source:
     owner: cloudfoundry-incubator
     repository: stembuild
-# un comment the required version. initail baseline 2019.7 to support pks    
-#    tag_filter: ((os-version)).(.*)
-    tag_filter: ((os-version)).7
-   
+# uncomment the required version line . use 2019.7 to support pks  
+#    tag_filter: ((os-version)).(.*) # latest version for PAS
+    tag_filter: ((os-version)).7 # pinned version for PKS 1.5
   check_every: 1h  
 
 - name: govc
@@ -68,7 +67,7 @@ resources:
     access_key_id: ((s3.access-key-id))
     secret_access_key: ((s3.secret-access-key))
     bucket: ((s3.bucket))
-    #versioned_file: stemcell/bosh-stemcell-2019.12-vsphere-esxi-windows2019-go_agent.tgz
+    # versioned_file: stemcell/bosh-stemcell-2019.12-vsphere-esxi-windows2019-go_agent.tgz
     regexp: stemcell/bosh-stemcell-(.*)-vsphere-esxi-(.*)-go_agent.tgz
     endpoint: ((s3.endpoint))
 

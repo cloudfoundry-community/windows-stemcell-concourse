@@ -28,7 +28,7 @@ function powershellCmd() {
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
-	sleep 20
+	sleep 20 # sleep shall mitigate an issue where vix API reports wrong state after isuuing powershell commands
 	if ! processInfo=$(${govc} guest.ps -vm.ipath=${vm_ipath}  -p=${pid} -X=true -x -json); then
 		writeErr "could not get powershell process info on VM at ${vm_ipath}"
 		return 1

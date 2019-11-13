@@ -163,7 +163,7 @@ jobs:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
         trigger: true
-        passed: [create-base]
+        passed: [update-base]
       - get: govc
         params:
           globs:

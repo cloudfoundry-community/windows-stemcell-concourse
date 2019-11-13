@@ -41,6 +41,7 @@ function powershellCmd() {
 
 	echo "${exitCode}"
 	return 0
+	unset GOVC_GUEST_LOGIN
 }
 
 ######################################
@@ -56,7 +57,7 @@ function uploadFile() {
 	local source_file="${4}"
 	local dest_file="${5}"
 
-	if ! ${govc} guest.upload -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
+	if ! ${govc} guest.upload -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
 		writeErr "Could not upload file to VM at ${vm_ipath}"
 		return 1
 	fi

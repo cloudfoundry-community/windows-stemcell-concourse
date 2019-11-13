@@ -22,8 +22,8 @@ function powershellCmd() {
 	local vm_username="${2}"
 	local vm_password="${3}"
 	local script="${4}"
-
-	if ! pid=$(${govc} guest.start -vm.ipath=${vm_ipath} -l='${vm_username}:${vm_password}' \
+	local GOVC_GUEST_LOGIN="${vm_username}:${vm_password}"
+	if ! pid=$(${govc} guest.start -vm.ipath=${vm_ipath} \
 		'C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "'+${script}+'"'); then
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1

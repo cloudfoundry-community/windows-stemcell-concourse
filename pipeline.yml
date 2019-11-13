@@ -15,7 +15,7 @@ resources:
 - name: windows-stemcell-concourse-image
   type: docker-image
   source:
-    repository: cfcommunity/windows-stemcell-concourse
+    repository: bottkars/windows-stemcell-concourse
     tag: latest
   
 - name: pipeline-resources
@@ -152,6 +152,8 @@ jobs:
         params:
           <<: *vcenter-params
           <<: *os-params
+          <<: *vm-params
+        
 
   - name: clone-base
     plan:

@@ -37,7 +37,10 @@ resources:
   source:
     owner: cloudfoundry-incubator
     repository: stembuild
-    tag_filter: ((os-version)).(.*)
+# un comment the required version. initail baseline 2019.7 to support pks    
+#    tag_filter: ((os-version)).(.*)
+    tag_filter: ((os-version)).7
+   
   check_every: 1h  
 
 - name: govc

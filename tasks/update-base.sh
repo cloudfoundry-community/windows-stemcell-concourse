@@ -60,7 +60,7 @@ source "${THIS_FOLDER}/functions/govc.sh" \
 #######################################
 #       Begin task
 #######################################
-#set -x #echo all commands
+set -x #echo all commands
 
 baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
 

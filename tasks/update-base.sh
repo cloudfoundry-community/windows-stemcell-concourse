@@ -89,7 +89,7 @@ echo "--------------------------------------------------------"
 echo "Running windows update"
 echo "--------------------------------------------------------"
 echo -ne "|"
-for ((i = 1; i <= 3; i++)); do
+#for ((i = 1; i <= 3; i++)); do
 	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"); then
 		writeErr "could not run windows update"
 		exit 1
@@ -105,8 +105,8 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	echo -ne "."
-done
+#	echo -ne "."
+#done
 
 echo "|"
 

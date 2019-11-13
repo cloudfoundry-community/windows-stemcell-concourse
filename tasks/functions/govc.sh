@@ -23,13 +23,13 @@ function powershellCmd() {
 	local vm_password="${3}"
 	local script="${4}"
 
-	if ! pid=$(${govc} guest.start -ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
+	if ! pid=$(${govc} guest.start -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
 		'C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "'+${script}+'"'); then
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! processInfo=$(${govc} guest.ps -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
+	if ! processInfo=$(${govc} guest.ps -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
 		writeErr "could not get powershell process info on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -56,7 +56,7 @@ function uploadFile() {
 	local source_file="${4}"
 	local dest_file="${5}"
 
-	if ! ${govc} guest.upload -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
+	if ! ${govc} guest.upload -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
 		writeErr "Could not upload file to VM at ${vm_ipath}"
 		return 1
 	fi
@@ -105,7 +105,7 @@ function mkdir() {
 	local vm_password="${3}"
 	local folder_Path="${4}"
 
-	if ! ${govc} guest.mkdir -ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
+	if ! ${govc} guest.mkdir -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
 		writeErr "Could not make dir on VM at ${vm_ipath}"
 		return 1
 	fi

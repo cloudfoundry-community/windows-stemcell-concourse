@@ -29,7 +29,7 @@ function powershellCmd() {
 		return 1
 	fi
 
-	if ! processInfo=$(${govc} guest.ps -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
+	if ! processInfo=$(${govc} guest.ps -vm.ipath=${vm_ipath}  -p=${pid} -X=true -x -json); then
 		writeErr "could not get powershell process info on VM at ${vm_ipath}"
 		return 1
 	fi

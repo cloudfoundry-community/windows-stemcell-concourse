@@ -161,14 +161,3 @@ function buildPowershellCommand() {
 
 	return 0
 }
-
-function buildPSFileCommand() {
-	local order="${1}"
-	local description=${2}
-	local path="${3}"
-	local will_reboot="${4}"
-
-	sed -e "s|{{order}}|${order}|" -e "s|{{description}}|${description}|" -e "s|{{path}}|${path}|" -e "s|{{will_reboot}}|${will_reboot}|" ${THIS_FOLDER}/functions/sync-cmd-psfile.xml
-
-	return 0
-}

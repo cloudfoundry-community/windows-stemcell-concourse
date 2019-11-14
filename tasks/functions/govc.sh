@@ -2,14 +2,7 @@
 
 #
 # Task Description:
-#   Functions to run dotnet actions. By adding this script as a source, the required binaries
-#   will automatically be installed
-#
-#	The targeted dotnet version can be overwritten by exporting DOTNET_VERSION
-#	ie: export DOTNET_VERSION=2.x.x
-#
-
-exec 5>&1
+#   Functions to interact with govc cli
 
 ######################################
 # Description:

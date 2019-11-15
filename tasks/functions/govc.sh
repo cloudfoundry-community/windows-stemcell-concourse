@@ -80,13 +80,13 @@ function powershellCmd() {
 	local vm_password="${3}"
 	local script="${4}"
 
-	if ! pid=$(${GOVC_EXE} guest.start -ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
+	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
 		'C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "'+${script}+'"'); then
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! processInfo=$(${GOVC_EXE} guest.ps -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
+	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
 		writeErr "could not get powershell process info on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -97,27 +97,6 @@ function powershellCmd() {
 	fi
 
 	echo "${exitCode}"
-	return 0
-}
-
-######################################
-# Description:
-#
-# Arguments:
-#
-#######################################
-function uploadFile() {
-	local vm_ipath="${1}"
-	local vm_username="${2}"
-	local vm_password="${3}"
-	local source_file="${4}"
-	local dest_file="${5}"
-
-	if ! ${GOVC_EXE} guest.upload -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
-		writeErr "Could not upload file to VM at ${vm_ipath}"
-		return 1
-	fi
-
 	return 0
 }
 
@@ -162,7 +141,7 @@ function mkdir() {
 	local vm_password="${3}"
 	local folder_Path="${4}"
 
-	if ! ${GOVC_EXE} guest.mkdir -ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
+	if ! ${GOVC_EXE} guest.mkdir -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
 		writeErr "Could not make dir on VM at ${vm_ipath}"
 		return 1
 	fi

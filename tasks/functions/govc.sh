@@ -80,8 +80,10 @@ function powershellCmd() {
 	local vm_password="${3}"
 	local script="${4}"
 
-	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
-		'C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "'+${script}+'"'); then
+	echo "Running PS: ${script}"
+
+	local cmd=(C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "${script}")
+	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" "${cmd[@]}"); then
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -91,12 +93,12 @@ function powershellCmd() {
 		return 1
 	fi
 
-	if ! exitCode=$(echo "${processInfo}" | jq '.info.ProcessInfo[0].ExitCode'); then
+	if ! exitCode=$(echo "${processInfo}" | jq '.ProcessInfo[0].ExitCode'); then
 		writeErr "process info not be parsed for powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	echo "${exitCode}"
+	echo "Exit code: ${exitCode}"
 	return 0
 }
 

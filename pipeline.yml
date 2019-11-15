@@ -141,7 +141,7 @@ jobs:
           globs:
             - govc_linux_amd64.gz
       - get: stembuild-release
-        #trigger: true #start the pipeline whenever there is a new stembuild
+        trigger: true #start the pipeline whenever there is a new stembuild
         params:
           globs:
             - stembuild-linux-*

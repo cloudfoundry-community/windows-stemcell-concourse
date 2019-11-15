@@ -4,6 +4,77 @@
 # Task Description:
 #   Functions to interact with govc cli
 
+
+######################################
+# Description: Initialize GOVC_* environment variables used by the govc binary.
+# Globals:
+#	GOVC_EXE
+#	GOVC_URL
+#	GOVC_USERNAME
+#	GOVC_PASSWORD
+#	GOVC_INSECURE
+#	GOVC_TLS_CA_CERTS
+# Arguments:
+#	vcenter_host
+#	vcenter_username
+#	vcenter_password
+#	vcenter_ca_certs
+#	govc_file_path
+# Returns:
+#	None
+#######################################
+function initializeGovc() {
+	local vcenter_host="${1}"
+	local vcenter_username="${2}"
+	local vcenter_password="${3}"
+	local vcenter_ca_certs="${4}"
+	local govc_file_path="${5}"
+
+	echo "Initializing govc"
+
+	export GOVC_EXE="${govc_file_path}"
+	export GOVC_URL="${vcenter_host}"
+	export GOVC_USERNAME="${vcenter_username}"
+	export GOVC_PASSWORD="${vcenter_password}"
+
+	if [[ -n "${vcenter_ca_certs}" ]]; then
+		GOVC_TLS_CA_CERTS=$(mktemp)
+		export GOVC_TLS_CA_CERTS
+		export GOVC_INSECURE=0
+
+		# write the cert to file locally
+		(echo "${vcenter_ca_certs}" | awk '
+			match($0,/- .* -/){
+				val=substr($0,RSTART,RLENGTH)
+				gsub(/- | -/,"",val)
+				gsub(OFS,ORS,val)
+				print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') > "${GOVC_TLS_CA_CERTS}"
+	else
+		export GOVC_INSECURE=1
+	fi
+
+	if [ -z "${GOVC_EXE}" ]; then
+		writeErr "govc binary not found"
+		return 1;
+	fi
+
+	if ! command -v "${GOVC_EXE}" >/dev/null; then
+		writeErr "govc binary invalid"
+		return 1;
+	fi
+
+	# test that we have a good connection to vcenter
+	if ! ret=$(${GOVC_EXE} about); then
+		writeErr "could not connect to vcenter with provided info - ${ret}"
+		return 1;
+	fi
+
+	if [[ ${ret} == *"specify an"* ]]; then
+		writeErr "${ret}"
+		return 1;
+	fi
+}
+
 ######################################
 # Description:
 #
@@ -16,13 +87,13 @@ function powershellCmd() {
 	local vm_password="${3}"
 	local script="${4}"
 
-	if ! pid=$(${govc} guest.start -ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
+	if ! pid=$(${GOVC_EXE} guest.start -ipath=${vm_ipath} -l=${vm_username}:${vm_password} \
 		'C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "'+${script}+'"'); then
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! processInfo=$(${govc} guest.ps -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
+	if ! processInfo=$(${GOVC_EXE} guest.ps -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
 		writeErr "could not get powershell process info on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -49,7 +120,7 @@ function uploadFile() {
 	local source_file="${4}"
 	local dest_file="${5}"
 
-	if ! ${govc} guest.upload -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
+	if ! ${GOVC_EXE} guest.upload -ipath=${vm_ipath} -l=${vm_username}:${vm_password} -f=true "${source_file}" "${dest_file}"; then
 		writeErr "Could not upload file to VM at ${vm_ipath}"
 		return 1
 	fi
@@ -68,17 +139,17 @@ function insertFloppy() {
 	local datastore_name="${2}"
 	local floppy_img_ds_path="${3}"
 
-	if ! info=$(${govc} datastore.info -json ${datastore_name}); then
+	if ! info=$(${GOVC_EXE} datastore.info -json ${datastore_name}); then
 		writeErr "Could not get datastore info at ${datastore_name}"
 		return 1
 	fi
 
-	if ! ${govc} device.floppy.add -vm="${vm_name}"; then
+	if ! ${GOVC_EXE} device.floppy.add -vm="${vm_name}"; then
 		writeErr "Could not add floppy drive to ${vm_name}"
 		return 1
 	fi
 
-	if ! ${govc} device.floppy.insert -vm="${vm_name}" -ds="${datastore_name}" "${floppy_img_ds_path}"; then
+	if ! ${GOVC_EXE} device.floppy.insert -vm="${vm_name}" -ds="${datastore_name}" "${floppy_img_ds_path}"; then
 		writeErr "Could not insert floppy file ${floppy_img_ds_path} into ${vm_name}"
 		return 1
 	fi
@@ -98,7 +169,7 @@ function mkdir() {
 	local vm_password="${3}"
 	local folder_Path="${4}"
 
-	if ! ${govc} guest.mkdir -ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
+	if ! ${GOVC_EXE} guest.mkdir -ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
 		writeErr "Could not make dir on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -134,7 +205,7 @@ function clonevm() {
 
 	[[ ! -z ${vm_resource_pool} ]] && args="${args} -pool='${vm_resource_pool}'"
 
-	cmd="${govc} vm.clone ${args} ${vm_name}" #finally add the VM name
+	cmd="${GOVC_EXE} vm.clone ${args} ${vm_name}" #finally add the VM name
 
 	echo ${cmd} #for reference
 	if ! eval "${cmd}"; then
@@ -155,7 +226,7 @@ function resizeDisk() {
 	local vm_ipath="${1}"
 	local disk_size_gb="${2}"
 
-	if ! ${govc} vm.disk.change -vm.ipath=${vm_ipath} -size=${disk_size_gb}; then
+	if ! ${GOVC_EXE} vm.disk.change -vm.ipath=${vm_ipath} -size=${disk_size_gb}; then
 		writeErr "Could not resize VM disk at ${vm_ipath}"
 		return 1
 	fi
@@ -172,7 +243,7 @@ function resizeDisk() {
 function getInfo() {
 	local vm_ipath="${1}"
 
-	if ! info=$(${govc} vm.info -json -vm.ipath="${vm_ipath}"); then
+	if ! info=$(${GOVC_EXE} vm.info -json -vm.ipath="${vm_ipath}"); then
 		writeErr "Could not get vm info at ${vm_ipath}"
 		return 1
 	fi
@@ -216,7 +287,7 @@ function getPowerState() {
 function powerOnVM() {
 	local vm_ipath="${1}"
 
-	if ! ret=$(${govc} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true 2>&1); then
 		if [[ "${ret}" == *"current state (Powered on)"* ]]; then
 			return 0
 		else
@@ -238,7 +309,7 @@ function powerOnVM() {
 function restartVM() {
 	local vm_ipath="${1}"
 
-	if ! ${govc} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true; then
+	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true; then
 		writeErr "Could not restart VM at ${vm_ipath}"
 		return 1
 	fi
@@ -256,7 +327,7 @@ function connectDevice() {
 	local vm_ipath="${1}"
 	local device_name="${2}"
 
-	if ! ${govc} device.connect -vm.ipath=${vm_ipath} ${device_name}; then
+	if ! ${GOVC_EXE} device.connect -vm.ipath=${vm_ipath} ${device_name}; then
 		writeErr "Could not connect device to VM at ${vm_ipath}"
 		return 1
 	fi
@@ -273,7 +344,7 @@ function connectDevice() {
 function powerOffVM() {
 	local vm_ipath="${1}"
 
-	if ! ${govc} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true; then
+	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true; then
 		writeErr "Could not power off VM at ${vm_ipath}"
 		return 1
 	fi
@@ -319,7 +390,7 @@ function buildIpath() {
 function vmExists() {
 	local vm_ipath="${1}"
 
-	if ! info=$(${govc} vm.info -json -vm.ipath="${vm_ipath}" 2>&1); then
+	if ! info=$(${GOVC_EXE} vm.info -json -vm.ipath="${vm_ipath}" 2>&1); then
 		if [[ "${info}" == *"no such VM"* ]]; then
 			echo false
 			return 0
@@ -386,12 +457,12 @@ function uploadToDatastore() {
 	local datastore_name="${2}"
 	local saveas_file_path="${3}"
 
-	if ! info=$(${govc} datastore.info -json ${datastore_name}); then
+	if ! info=$(${GOVC_EXE} datastore.info -json ${datastore_name}); then
 		writeErr "Could not get datastore info at ${datastore_name}"
 		return 1
 	fi
 
-	if ! ${govc} datastore.upload -ds=${datastore_name} ${file_path} ${saveas_file_path}; then
+	if ! ${GOVC_EXE} datastore.upload -ds=${datastore_name} ${file_path} ${saveas_file_path}; then
 		writeErr "Could not upload file as ${saveas_file_path} to datastore ${datastore_name}"
 		return 1
 	fi
@@ -408,7 +479,7 @@ function uploadToDatastore() {
 function destroyVM() {
 	local vm_ipath="${1}"
 
-	if ! ret=$(${govc} vm.destroy -vm.ipath=${vm_ipath} 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.destroy -vm.ipath=${vm_ipath} 2>&1); then
 		if [[ "${ret}" == *"no such VM"* ]]; then
 			return 0
 		else
@@ -430,7 +501,7 @@ function destroyVM() {
 function folderExists() {
 	local folder_ipath="${1}"
 
-	if ! info=$(${govc} folder.info -json "${folder_ipath}" 2>&1); then
+	if ! info=$(${GOVC_EXE} folder.info -json "${folder_ipath}" 2>&1); then
 		if [[ "${info}" == *"not found"* ]]; then
 			echo false
 			return 0
@@ -453,7 +524,7 @@ function folderExists() {
 function createFolder() {
 	local folder_ipath="${1}"
 
-	if ! ${govc} folder.create "${folder_ipath}"; then
+	if ! ${GOVC_EXE} folder.create "${folder_ipath}"; then
 		writeErr "Could not create folder at ${folder_ipath}"
 		return 1
 	fi
@@ -504,7 +575,7 @@ function createVMwithISO() {
 	[[ ! -z ${vm_resource_pool} ]] && args="${args} -pool='${vm_resource_pool}'"
 	#[[ ! -z ${vm_cluster} ]] && args="${args} -datastore-cluster='${vm_cluster}'"
 
-	cmd="${govc} vm.create ${args} ${vm_name}" #finally add the VM name
+	cmd="${GOVC_EXE} vm.create ${args} ${vm_name}" #finally add the VM name
 
 	echo ${cmd} #for reference
 	if ! eval ${cmd}; then
@@ -524,7 +595,7 @@ function createVMwithISO() {
 function setBootOrder() {
 	local vm_ipath="${1}"
 
-	if ! ${govc} device.boot -order=cdrom,disk -vm.ipath=${vm_ipath}; then
+	if ! ${GOVC_EXE} device.boot -order=cdrom,disk -vm.ipath=${vm_ipath}; then
 		writeErr "Could not set boot order at ${vm_ipath}"
 		return 1
 	fi
@@ -541,7 +612,7 @@ function setBootOrder() {
 function ejectCDRom() {
 	local vm_ipath="${1}"
 
-	if ! ${govc} device.cdrom.eject -vm.ipath=${vm_ipath}; then
+	if ! ${GOVC_EXE} device.cdrom.eject -vm.ipath=${vm_ipath}; then
 		writeErr "Could not eject CD at ${vm_ipath}"
 		return 1
 	fi
@@ -558,93 +629,17 @@ function ejectCDRom() {
 function ejectAndRemoveFloppyDrive() {
 	local vm_ipath="${1}"
 
-	id="$(${govc} device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-[0-9]*')"
+	id="$(${GOVC_EXE} device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-[0-9]*')"
 
-	if ! ${govc} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id}; then
+	if ! ${GOVC_EXE} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id}; then
 		writeErr "Could not eject floppy at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! ${govc} device.remove -vm.ipath=${vm_ipath} ${id}; then
+	if ! ${GOVC_EXE} device.remove -vm.ipath=${vm_ipath} ${id}; then
 		writeErr "Could not remove floppy at ${vm_ipath}"
 		return 1
 	fi
 
 	return 0
 }
-
-######################################
-
-vcenter_url=""
-vcenter_username=""
-vcenter_password=""
-govc=""
-cert_path=""
-use_cert=""
-
-echo "Initializing govc"
-
-while [ $# -ne 0 ]; do
-	name="$1"
-	case "$name" in
-	-govc)
-		shift
-		govc="$1"
-		;;
-	--url | -[Uu]rl)
-		shift
-		vcenter_url="$1"
-		;;
-	--username | -[Uu]sername)
-		shift
-		vcenter_username="$1"
-		;;
-	--password | -[Pp]assword)
-		shift
-		vcenter_password="$1"
-		;;
-	-[Cc]ert-path)
-		shift
-		cert_path="$1"
-		;;
-	-[Uu]se-cert)
-		shift
-		use_cert="$1"
-		;;
-	esac
-
-	shift
-done
-
-if [ -z ${govc} ]; then
-	writeErr "govc binary not found"
-	exit 1
-fi
-
-if ! command -v ${govc} >/dev/nulll; then
-	writeErr "govc binary invalid"
-	exit 1
-fi
-
-export GOVC_URL=${vcenter_url}
-export GOVC_USERNAME=${vcenter_username}
-export GOVC_PASSWORD=${vcenter_password}
-
-if [[ "${use_cert}" == "true" ]]; then
-	export GOVC_INSECURE=0
-	export GOVC_TLS_CA_CERTS=${cert_path}
-else
-	export GOVC_INSECURE=1
-fi
-
-#test that we have a good connection
-if ! ret=$(${govc} about); then
-	writeErr "could not connect to vcenter with provided info () - ${ret}"
-
-	exit 1
-fi
-
-if [[ ${ret} == *"specify an"* ]]; then
-	writeErr "${ret}"
-	exit 1
-fi

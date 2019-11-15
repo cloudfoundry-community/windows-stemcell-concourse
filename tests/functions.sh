@@ -299,18 +299,20 @@ function testPackage() {
 #===============================================================================
 # SOURCE SCRIPTS
 #===============================================================================
-# shellcheck source=../tasks/functions/utility.sh
 source "${THIS_FOLDER}/functions/utility.sh"
-# shellcheck source=../tasks/functions/autounattend.sh
 source "${THIS_FOLDER}/functions/autounattend.sh"
-# shellcheck source=../tasks/functions/govc.sh
-source "${THIS_FOLDER}/functions/govc.sh" \
-	-govc "sudo -E $(find ${ROOT_FOLDER}/govc/govc_linux_* 2>/dev/null | head -n1)" \
-	-url "${vcenter_host}" \
-	-username "${vcenter_username}" \
-	-password "${vcenter_password}" \
-	-use-cert "${use_cert}" \
-	-cert-path "${cert_path}"
+source "${THIS_FOLDER}/functions/govc.sh"
+
+if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
+
+if ! initializeGovc "${vcenter_host}" \
+	"${vcenter_username}" \
+	"${vcenter_password}" \
+	"${vcenter_ca_certs}" \
+	"${ROOT_FOLDER}/govc/govc_linux_amd64" ; then
+	writeErr "error initializing govc"
+	exit 1
+fi
 
 #===============================================================================
 # VARIABLES

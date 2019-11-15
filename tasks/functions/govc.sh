@@ -41,14 +41,7 @@ function initializeGovc() {
 		GOVC_TLS_CA_CERTS=$(mktemp)
 		export GOVC_TLS_CA_CERTS
 		export GOVC_INSECURE=0
-
-		# write the cert to file locally
-		(echo "${vcenter_ca_certs}" | awk '
-			match($0,/- .* -/){
-				val=substr($0,RSTART,RLENGTH)
-				gsub(/- | -/,"",val)
-				gsub(OFS,ORS,val)
-				print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') > "${GOVC_TLS_CA_CERTS}"
+		cat <<< "${vcenter_ca_certs}" > "${GOVC_TLS_CA_CERTS}"
 	else
 		export GOVC_INSECURE=1
 	fi

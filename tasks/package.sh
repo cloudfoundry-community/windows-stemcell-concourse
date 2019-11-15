@@ -48,13 +48,10 @@ fi
 source "${THIS_FOLDER}/functions/utility.sh"
 source "${THIS_FOLDER}/functions/govc.sh"
 
-if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
-
 if ! initializeGovc "${vcenter_host}" \
 	"${vcenter_username}" \
 	"${vcenter_password}" \
-	"${vcenter_ca_certs}" \
-	"${ROOT_FOLDER}/govc/govc_linux_amd64" ; then
+	"${vcenter_ca_certs}" ; then
 	writeErr "error initializing govc"
 	exit 1
 fi

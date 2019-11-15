@@ -40,13 +40,6 @@ resources:
     tag_filter: ((os-version)).(.*)
   check_every: 1h  
 
-- name: govc
-  type: github-release
-  source:
-    owner: vmware
-    repository: govmomi
-    tag_filter: 0.21.(.*)
-  check_every: 1h
 - name: lgpo
   type: file-url
   source:
@@ -113,16 +106,11 @@ jobs:
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
-      - get: govc
-        params:
-          globs:
-            - govc_linux_amd64.gz
       - get: autounattend
       - task: create-base
         file: pipeline-resources/tasks/create-base.yml
         image: windows-stemcell-concourse-image
         input_mapping:
-          govc: govc
           autounattend: autounattend
           pipeline-resources: pipeline-resources
         params:
@@ -134,10 +122,6 @@ jobs:
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
-      - get: govc
-        params:
-          globs:
-            - govc_linux_amd64.gz
       - get: stembuild-release
         #trigger: true #start the pipeline whenever there is a new stembuild
         params:
@@ -147,7 +131,6 @@ jobs:
         file: pipeline-resources/tasks/update-base.yml
         image: windows-stemcell-concourse-image
         input_mapping:
-          govc: govc
           pipeline-resources: pipeline-resources
         params:
           <<: *vcenter-params
@@ -160,10 +143,6 @@ jobs:
       - get: pipeline-resources
         trigger: true
         passed: [create-base]
-      - get: govc
-        params:
-          globs:
-            - govc_linux_amd64.gz
       - get: stembuild-release
         params:
           globs:
@@ -172,7 +151,6 @@ jobs:
         file: pipeline-resources/tasks/clone-base.yml
         image: windows-stemcell-concourse-image
         input_mapping:
-          govc: govc
           stembuild: stembuild-release
           pipeline-resources: pipeline-resources
         params:
@@ -186,10 +164,6 @@ jobs:
         trigger: true
         passed: [clone-base]
       - get: lgpo
-      - get: govc
-        params:
-          globs:
-            - govc_linux_amd64.gz
       - get: stembuild-release
         params:
           globs:
@@ -200,7 +174,6 @@ jobs:
         input_mapping:
           stembuild: stembuild-release
           lgpo: lgpo
-          govc: govc
           pipeline-resources: pipeline-resources
         params:
           <<: *vcenter-params
@@ -213,10 +186,6 @@ jobs:
       - get: pipeline-resources
         trigger: true
         passed: [construct]
-      - get: govc
-        params:
-          globs:
-            - govc_linux_amd64.gz
       - get: stembuild-release
         params:
           globs:
@@ -226,7 +195,6 @@ jobs:
         image: windows-stemcell-concourse-image
         input_mapping:
           stembuild: stembuild-release
-          govc: govc
           pipeline-resources: pipeline-resources
         params:
           <<: *vcenter-params

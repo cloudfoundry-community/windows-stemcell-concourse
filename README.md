@@ -47,7 +47,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
   1. A current Windows image. Testing was done with Windows Server 2019 but you could also use Server 1709 or Server 1803. Windows ISO images are not distributable. You will need to manually add it to the vSphere datastore. Note within the store, the pipeline is expecting the ISO to be within a datastore folder named `Win-Stemcell-ISO`. For testing you can download the [trial Windows Server 2019 ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019).
 
-  1. Govc executable, see the [docs](https://github.com/vmware/govmomi) for more detail. The pipeleline is set to download the latest stable 0.21 release.
+  1. Govc executable, see the [docs](https://github.com/vmware/govmomi) for more detail. The build image uses the latest stable 0.21 release.
 
   1. The Local Group Policy Object(LGPO) Utility. See the [docs](https://blogs.technet.microsoft.com/secguide/2016/01/21/lgpo-exe-local-group-policy-object-utility-v1-0/) for more detail. The pipeline is set to download the latest release.
 
@@ -57,7 +57,6 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
 The pipeline assumes your Concourse workers have access to the internet. If thats not the case, you can download the needed assets to a local S3 compatible bucket can adjust the pipeline to retrieve from there. You'll need to made the following available:
 
-- Govc
 - LGPO
 - Stembuild
 - A clone of this repo

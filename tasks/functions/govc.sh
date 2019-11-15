@@ -32,7 +32,7 @@ function initializeGovc() {
 
 	echo "Initializing govc"
 
-	export GOVC_EXE="${govc_file_path}"
+	export GOVC_EXE="govc"
 	export GOVC_URL="${vcenter_host}"
 	export GOVC_USERNAME="${vcenter_username}"
 	export GOVC_PASSWORD="${vcenter_password}"

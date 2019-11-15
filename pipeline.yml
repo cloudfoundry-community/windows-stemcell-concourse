@@ -38,8 +38,8 @@ resources:
     owner: cloudfoundry-incubator
     repository: stembuild
 # uncomment the required version line . use 2019.7 to support pks  
-#    tag_filter: ((os-version)).(.*) # latest version for PAS
-    tag_filter: ((os-version)).7 # pinned version for PKS 1.5
+    tag_filter: ((os-version)).(.*) # latest version for PAS
+#    tag_filter: ((os-version)).7 # pinned version for PKS 1.5
   check_every: 1h  
 
 - name: govc

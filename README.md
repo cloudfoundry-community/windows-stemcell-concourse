@@ -103,7 +103,7 @@ Additionally you'll need to add the docker images to a local repository and adju
 | vcenter-username | User to interact with vcenter server. Needs the permission to create/config/remove VMs. | Yes | (string) |
 | vcenter-password | Password for vcenter user. | Yes | (string) |
 | vcenter-datacenter | Vsphere datacenter name, for placing VMs and data. Do not include a slash(/). | Yes | (alphanumeric, underscore, dash) |
-| vcenter-ca-certs | To connect with vcenter over a secure connection, you'll need to provide the certificate. Follow [this vmware doc](https://pubs.vmware.com/vsphere-6-5/index.jsp?topic=%2Fcom.vmware.vcli.getstart.doc%2FGUID-9AF8E0A7-1A64-4839-AB97-2F18D8ECB9FE.html) to retrieve the Base64 string. Stembuild requires secure connections, which makes this variable required. | Yes | (string) |
+| vcenter-ca-certs | To connect with vcenter over a secure connection, you'll need to provide the certificate. Follow [this vmware doc](https://kb.vmware.com/s/article/2108294) to retrieve the Base64 string. Stembuild requires secure connections, which makes this variable required. | Yes | (string) |
 | base-vm-name | The name of the initial Windows VM created, used as a clone for stembuild. | Yes | **Win-Stemcell-Base** |
 | vm-folder | The vsphere datacenter VM folder to hold base and clone VMs. | Yes | Stemcell |
 | vm-datastore | The vsphere datastore to hold VM disks. | Yes | (alphanumeric, underscore, dash) |

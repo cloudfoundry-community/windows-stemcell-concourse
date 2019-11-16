@@ -89,7 +89,7 @@ destroyVM "${stembuildVMIPath}"
 
 #
 if ! vmExists "${baseVMIPath}"; then
-	writeErr "base VM found not found for clone at path ${iPath}"
+	writeErr "base VM not found for clone at path ${iPath}"
 	exit 1
  fi
 

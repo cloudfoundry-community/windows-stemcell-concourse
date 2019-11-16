@@ -16,6 +16,12 @@ resource_types:
     repository: starkandwayne/rss-resource
     tag: latest
 resources:
+
+- name: one-time-trigger
+  icon: calendar-clock
+  type: time
+  source:
+    interval: 999999h
 - name: windows-stemcell-concourse-image
   type: docker-image
   source:
@@ -126,6 +132,8 @@ jobs:
         params:
           globs:
             - govc_linux_amd64.gz
+      - get: one-time-trigger
+        trigger: true            
       - get: autounattend
       - task: create-base
         file: pipeline-resources/tasks/create-base.yml

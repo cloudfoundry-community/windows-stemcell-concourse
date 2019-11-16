@@ -10,14 +10,21 @@ resource_types:
   source:
     repository: pivotalservices/concourse-curl-resource
     tag: latest
-
+- name: rss
+  type: docker-image
+  source:
+    repository: starkandwayne/rss-resource
+    tag: latest
 resources:
 - name: windows-stemcell-concourse-image
   type: docker-image
   source:
     repository: cfcommunity/windows-stemcell-concourse
     tag: latest
-  
+- name: server2019_update
+  type: rss
+  source:
+    url: https://support.microsoft.com/app/content/api/content/feeds/sap/en-us/eb958e25-cff9-2d06-53ca-f656481bb31f/rss/   
 - name: pipeline-resources
   type: git
   source:
@@ -38,7 +45,7 @@ resources:
     owner: cloudfoundry-incubator
     repository: stembuild
 # uncomment the required version line . use 2019.7 to support pks  
-    tag_filter: ((os-version)).(.*) # latest version for PAS
+#    tag_filter: ((os-version)).(.*) # latest version for PAS
 #    tag_filter: ((os-version)).7 # pinned version for PKS 1.5
   check_every: 1h  
 
@@ -136,6 +143,8 @@ jobs:
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
+      - get: server2019_update
+        trigger: true
       - get: govc
         params:
           globs:
@@ -161,16 +170,23 @@ jobs:
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
-        trigger: true
-        passed: [update-base]
+      #  trigger: true
+      #  passed: [update-base]
       - get: govc
         params:
           globs:
             - govc_linux_amd64.gz
       - get: stembuild-release
+        trigger: true
         params:
           globs:
             - stembuild-linux-*
+        passed:
+        - update-base  
+      - get: server2019_update
+        trigger: true
+        passed:
+        - update-base              
       - task: clone-base
         file: pipeline-resources/tasks/clone-base.yml
         image: windows-stemcell-concourse-image
@@ -186,8 +202,8 @@ jobs:
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
-        trigger: true
-        passed: [clone-base]
+      #  trigger: true
+      #  passed: [clone-base]
       - get: lgpo
       - get: govc
         params:
@@ -197,6 +213,13 @@ jobs:
         params:
           globs:
             - stembuild-linux-*
+        trigger: true 
+        passed:
+        - clone-base
+      - get: server2019_update
+        trigger: true
+        passed:
+        - clone-base              
       - task: construct
         file: pipeline-resources/tasks/construct.yml
         image: windows-stemcell-concourse-image
@@ -214,8 +237,8 @@ jobs:
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
-        trigger: true
-        passed: [construct]
+      #  trigger: true
+      #  passed: [construct]
       - get: govc
         params:
           globs:
@@ -224,6 +247,13 @@ jobs:
         params:
           globs:
             - stembuild-linux-*
+        trigger: true
+        passed:
+        - construct  
+      - get: server2019_update
+        trigger: true
+        passed:
+        - construct             
       - task: package
         file: pipeline-resources/tasks/package.yml
         image: windows-stemcell-concourse-image

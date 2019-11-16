@@ -323,6 +323,22 @@ function powerOffVM() {
 # Arguments:
 #
 #######################################
+function shutdownVM() {
+	local vm_ipath="${1}"
+
+	if ! ${govc} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true; then
+		writeErr "Could not shutdown VM at ${vm_ipath}"
+		return 1
+	fi
+
+	return 0
+}
+######################################
+# Description:
+#
+# Arguments:
+#
+#######################################
 function buildIpath() {
 	local vm_datacenter="${1}"
 	local vm_folder=${2}

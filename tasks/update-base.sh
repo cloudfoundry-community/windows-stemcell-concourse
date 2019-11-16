@@ -94,7 +94,7 @@ do
 	printf .
 	sleep 10
 done
-	
+
 echo 
 echo "--------------------------------------------------------"
 echo "Tools Running"
@@ -125,8 +125,8 @@ echo -ne "|"
 
 echo "|"
 
-if ! powerOffVM "${baseVMIPath}"; then
-	writeErr "powering off VM"
+if ! shutdownVM "${baseVMIPath}"; then
+	writeErr "shudown vm"
 	exit 1
 else
 	echo "Done"

@@ -86,7 +86,7 @@ echo "--------------------------------------------------------"
 destroyVM "${stembuildVMIPath}"
 
 #
-if  vmExists "${baseVMIPath}"; then
+if ! vmExists "${baseVMIPath}"; then
 	writeErr "base VM found not found for clone at path ${iPath}"
 	exit 1
  fi

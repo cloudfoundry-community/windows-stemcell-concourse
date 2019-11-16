@@ -123,6 +123,24 @@ echo -ne "|"
 #	echo -ne "."
 #done
 
+
+echo "--------------------------------------------------------"
+echo "waiting for tools online on"
+echo "--------------------------------------------------------"
+
+while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
+do	
+	printf .
+	sleep 10
+done
+
+echo 
+echo "--------------------------------------------------------"
+echo "Tools Running"
+echo "--------------------------------------------------------"
+
+
+
 echo "|"
 
 if ! shutdownVM "${baseVMIPath}"; then

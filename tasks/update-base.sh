@@ -79,14 +79,14 @@ fi
 )
 
 if ! powerOnVM "${baseVMIPath}"; then
-	writeErr "powering on VM"
+	writeErr "powering on VM ${base_vm_name}"
 	exit 1
 else
 	echo "Done"
 fi
 
 echo "--------------------------------------------------------"
-echo "waiting for tools online on"
+echo "waiting for tools online on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
 
 while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
@@ -97,11 +97,11 @@ done
 
 echo 
 echo "--------------------------------------------------------"
-echo "Tools Running"
+echo "Tools Running on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
 
 echo "--------------------------------------------------------"
-echo "Running windows update"
+echo "Running windows update on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
 echo -ne "|"
 echo

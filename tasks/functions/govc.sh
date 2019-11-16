@@ -252,7 +252,7 @@ function getToolsStatus() {
 		return 1
 	fi # 2>&1
 
-	if ! toolsStatus=$(echo ${info} | jq'.VirtualMachines[].Guest.ToolsStatus'); then
+	if ! toolsStatus=$(echo ${info} | jq '.VirtualMachines[].Guest.ToolsStatus'); then
 		writeErr "Could not parse vm info at ${vm_ipath}"
 		return 1
 	elif [[ -z "${toolsStatus}" ]]; then

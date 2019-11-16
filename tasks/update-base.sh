@@ -104,6 +104,7 @@ echo "--------------------------------------------------------"
 echo "Running windows update"
 echo "--------------------------------------------------------"
 echo -ne "|"
+echo
 #for ((i = 1; i <= 3; i++)); do
 	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"); then
 		writeErr "could not run windows update"
@@ -125,7 +126,24 @@ echo -ne "|"
 
 
 echo "--------------------------------------------------------"
-echo "waiting for tools online on"
+echo "waiting for tools offline on VM ${base_vm_name}"
+echo "--------------------------------------------------------"
+
+while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsNotRunning' ]]
+do	
+	printf .
+	sleep 2
+done
+
+echo 
+echo "--------------------------------------------------------"
+echo "Tools stopped on ${base_vm_name}"
+echo "--------------------------------------------------------"
+
+
+
+echo "--------------------------------------------------------"
+echo "waiting for tools online on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
 
 while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
@@ -136,14 +154,14 @@ done
 
 echo 
 echo "--------------------------------------------------------"
-echo "Tools Running"
+echo "Tools Running on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
 
 
 
 echo "|"
 
-if ! retryop "shutdownVM '${baseVMIPath}'" 3 10; then
+if ! retryop "shutdownVM '${baseVMIPath}'" 6 10; then
 	writeErr "shudown vm"
 	exit 1
 else

@@ -112,8 +112,8 @@ done
 
 echo "|"
 
-if ! powerOffVM "${baseVMIPath}"; then
-	writeErr "powering off VM"
+if ! retryop "shutdownVM '${baseVMIPath}'" 3 10; then
+	writeErr "shudown vm"
 	exit 1
 else
 	echo "Done"

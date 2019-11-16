@@ -143,7 +143,7 @@ echo "--------------------------------------------------------"
 
 echo "|"
 
-if ! shutdownVM "${baseVMIPath}"; then
+if ! retryop "shutdownVM '${baseVMIPath}'" 3 10; then
 	writeErr "shudown vm"
 	exit 1
 else

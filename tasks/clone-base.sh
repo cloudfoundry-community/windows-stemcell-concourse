@@ -80,10 +80,18 @@ if [[ -z "${stembuild_vm_name}" ]]; then
 fi
 
 baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
-if ! vmExists "${baseVMIPath}"; then
+# mutually destroy vm upon cloning
+stembuildVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
+echo "--------------------------------------------------------"
+echo "Destroy Base VM"
+echo "--------------------------------------------------------"
+destroyVM "${stembuildVMIPath}"
+
+#
+if  vmExists "${baseVMIPath}"; then
 	writeErr "base VM found not found for clone at path ${iPath}"
 	exit 1
-fi
+ fi
 
 echo "--------------------------------------------------------"
 echo "Clone Base VM"

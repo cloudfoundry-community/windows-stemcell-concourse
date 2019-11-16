@@ -88,8 +88,8 @@ fi
 echo "--------------------------------------------------------"
 echo "waiting for vm powered on"
 echo "--------------------------------------------------------"
-getToolsStatus "${baseVMIPath}"
-while [ "$(getToolsStatus "${baseVMIPath}" )" != "toolsOK" ]
+getToolsStatus ${baseVMIPath}
+while [ "$(getToolsStatus ${baseVMIPath} )" != "toolsOK" ]
 do	
 	echo "waiting for tools to come online"
 	getToolsStatus "${baseVMIPath}"

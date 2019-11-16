@@ -88,10 +88,11 @@ fi
 echo "--------------------------------------------------------"
 echo "waiting for vm powered on"
 echo "--------------------------------------------------------"
-
-until  [[ $(getToolsStatus "${baseVMIPath}") == "toolsOK" ]]
+getToolsStatus "${baseVMIPath}"
+until  [ $(getToolsStatus "${baseVMIPath}") == "toolsOK" ]
 do	
 	echo "waiting for tools to come online"
+	getToolsStatus "${baseVMIPath}"
 	sleep 10
 done	
 

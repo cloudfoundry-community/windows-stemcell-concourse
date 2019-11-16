@@ -92,7 +92,7 @@ echo "--------------------------------------------------------"
 until  [[ $(getToolsStatus) == "toolsOK" ]]
 do	
 	echo "waiting for tools to come online"
-	sllep 10
+	sleep 10
 done	
 
 echo "--------------------------------------------------------"

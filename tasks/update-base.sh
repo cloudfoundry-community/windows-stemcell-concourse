@@ -84,7 +84,22 @@ else
 fi
 
 echo "--------------------------------------------------------"
+<<<<<<< HEAD
 echo "waiting for vm powered on"
+=======
+echo "waiting for tools online on"
+echo "--------------------------------------------------------"
+
+while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
+do	
+	printf .
+	sleep 10
+done
+
+echo 
+echo "--------------------------------------------------------"
+echo "Tools Running"
+>>>>>>> 94fffb0... shutdown vm
 echo "--------------------------------------------------------"
 sleep 20
 echo "--------------------------------------------------------"
@@ -112,7 +127,11 @@ done
 
 echo "|"
 
+<<<<<<< HEAD
 if ! retryop "shutdownVM '${baseVMIPath}'" 3 10; then
+=======
+if ! shutdownVM "${baseVMIPath}"; then
+>>>>>>> 94fffb0... shutdown vm
 	writeErr "shudown vm"
 	exit 1
 else

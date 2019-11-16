@@ -86,15 +86,16 @@ else
 fi
 
 echo "--------------------------------------------------------"
-echo "waiting for vm powered on"
+echo "waiting for tools online on"
 echo "--------------------------------------------------------"
+
 while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
 do	
-	echo "waiting for tools to come online"
-	getToolsStatus "${baseVMIPath}"
+	printf .
 	sleep 10
-done	
-
+done
+	
+echo 
 echo "--------------------------------------------------------"
 echo "Tools Running"
 echo "--------------------------------------------------------"

@@ -274,6 +274,34 @@ function powerOnVM() {
 	return 0
 }
 
+
+######################################
+# Description:
+#
+# Arguments:
+# | jq -r '.VirtualMachines[].Guest.ToolsStatus'
+#######################################
+function getToolsStatus() {
+	local vm_ipath="${1}"
+
+	if ! info=$(getInfo "${vm_ipath}"); then
+		echo "${info}"
+		return 1
+	fi # 2>&1
+
+	if ! toolsStatus=$(echo ${info} | jq'.VirtualMachines[].Guest.ToolsStatus'); then
+		writeErr "Could not parse vm info at ${vm_ipath}"
+		return 1
+	elif [[ -z "${toolsStatus}" ]]; then
+		writeErr "Tools state could not be parsed for VM at ${vm_ipath}"
+		return 1
+	fi
+
+	echo "${toolsStatus}"
+	return 0
+}
+
+
 ######################################
 # Description:
 #

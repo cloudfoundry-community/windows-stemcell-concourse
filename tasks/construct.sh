@@ -44,18 +44,16 @@ fi
 #######################################
 #       Source helper functions
 #######################################
-# shellcheck source=./functions/utility.sh
 source "${THIS_FOLDER}/functions/utility.sh"
+source "${THIS_FOLDER}/functions/govc.sh"
 
-if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
-# shellcheck source=./functions/govc.sh
-source "${THIS_FOLDER}/functions/govc.sh" \
-	-govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-	-url "${vcenter_host}" \
-	-username "${vcenter_username}" \
-	-password "${vcenter_password}" \
-	-use-cert "${use_cert}" \
-	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
+if ! initializeGovc "${vcenter_host}" \
+	"${vcenter_username}" \
+	"${vcenter_password}" \
+	"${vcenter_ca_certs}" ; then
+	writeErr "error initializing govc"
+	exit 1
+fi
 
 #######################################
 #       Begin task
@@ -130,7 +128,7 @@ if ! eval ${cmd}; then
 	exit 1
 fi
 
-#Once the construct process exits, the VM is still doing work. We will know it's done with it shuts off. The following will download the govc cli and poll the VM for it's power status.
+#Once the construct process exits, the VM is still doing work. We will know it's done with it shuts off. The following will poll the VM for it's power status.
 
 echo -ne "|"
 while [[ $(getPowerState "${iPath}") == *"poweredOn"* ]]; do

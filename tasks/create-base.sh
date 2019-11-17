@@ -33,8 +33,6 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-use_cert=${use_cert:='false'}
-cert_path=${cert_path:=''}
 vm_network=${vm_network:='VM Network'}
 vm_cpu=${vm_cpu:=4}
 vm_memory_mb=${vm_memory_mb:=8000}
@@ -51,37 +49,20 @@ firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
 
-if [[ ! -z "${vcenter_ca_certs}" ]]; then
-	use_cert="true"
-
-	#write the cert to file locally
-	(echo ${vcenter_ca_certs} | awk '
-		match($0,/- .* -/){
-			val=substr($0,RSTART,RLENGTH)
-			gsub(/- | -/,"",val)
-			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
-
-	cert_path=${ROOT_FOLDER}/cert.crt
-fi
-
 #######################################
 #       Source helper functions
 #######################################
-# shellcheck source=./functions/utility.sh
 source "${THIS_FOLDER}/functions/utility.sh"
-# shellcheck source=./functions/autounattend.sh
 source "${THIS_FOLDER}/functions/autounattend.sh"
+source "${THIS_FOLDER}/functions/govc.sh"
 
-if ! findFileExpandArchive "${ROOT_FOLDER}/govc/govc_linux_amd64" "${ROOT_FOLDER}/govc/govc_linux_amd64.gz" true; then exit 1; fi
-# shellcheck source=./functions/govc.sh
-source "${THIS_FOLDER}/functions/govc.sh" \
-	-govc "${ROOT_FOLDER}/govc/govc_linux_amd64" \
-	-url "${vcenter_host}" \
-	-username "${vcenter_username}" \
-	-password "${vcenter_password}" \
-	-use-cert "${use_cert}" \
-	-cert-path "${cert_path}" || (writeErr "error initializing govc" && exit 1)
+if ! initializeGovc "${vcenter_host}" \
+	"${vcenter_username}" \
+	"${vcenter_password}" \
+	"${vcenter_ca_certs}" ; then
+	writeErr "error initializing govc"
+	exit 1
+fi
 
 #######################################
 #       Begin task

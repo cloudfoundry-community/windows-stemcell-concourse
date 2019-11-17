@@ -23,15 +23,18 @@ resources:
   source:
     interval: 999999h
 - name: windows-stemcell-concourse-image
+  icon: docker
   type: docker-image
   source:
     repository: cfcommunity/windows-stemcell-concourse
     tag: latest
 - name: server2019_update
+  icon: rss
   type: rss
   source:
     url: https://support.microsoft.com/app/content/api/content/feeds/sap/en-us/eb958e25-cff9-2d06-53ca-f656481bb31f/rss/   
 - name: pipeline-resources
+  icon: github-face
   type: git
   source:
     uri: ((tasks.uri))
@@ -46,6 +49,7 @@ resources:
 #    sort_by: semver
 
 - name: stembuild-release
+  icon: powershell
   type: github-release
   source:
     owner: cloudfoundry-incubator
@@ -56,6 +60,7 @@ resources:
   check_every: 1h  
 
 - name: govc
+  icon: github-face
   type: github-release
   source:
     owner: vmware
@@ -63,18 +68,21 @@ resources:
     tag_filter: 0.21.(.*)
   check_every: 1h
 - name: lgpo
+  icon: package-down
   type: file-url
   source:
     url: https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip
     filename: LGPO.zip
 
 - name: autounattend
+  icon: git-face
   type: git
   source:
     uri: ((tasks.uri))
     branch: master
   check_every: 1h
 - name: stemcell-store
+  icon: amazon-drive
   type: s3
   source:
     access_key_id: ((s3.access-key-id))
@@ -125,6 +133,9 @@ os-params: &os-params
 
 jobs:
   - name: create-base
+    serial: true
+    serial_groups:
+    - base
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
@@ -148,6 +159,10 @@ jobs:
           <<: *os-params
 
   - name: update-base
+    serial: true
+    serial_groups:
+    - base
+    - update
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
@@ -175,6 +190,10 @@ jobs:
         
 
   - name: clone-base
+    serial: true
+    serial_groups:
+    - base
+    - update
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
@@ -191,6 +210,10 @@ jobs:
             - stembuild-linux-*
         passed:
         - update-base  
+      - get: one-time-trigger
+        trigger: true 
+        passed:
+        - create-base             
       - get: server2019_update
         trigger: true
         passed:
@@ -207,6 +230,10 @@ jobs:
           <<: *vm-params
         
   - name: construct
+    serial: true
+    serial_groups:
+    - base
+    - update
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
@@ -227,7 +254,11 @@ jobs:
       - get: server2019_update
         trigger: true
         passed:
-        - clone-base              
+        - clone-base  
+      - get: one-time-trigger
+        trigger: true 
+        passed:
+        - clone-base                 
       - task: construct
         file: pipeline-resources/tasks/construct.yml
         image: windows-stemcell-concourse-image
@@ -242,6 +273,10 @@ jobs:
           <<: *os-params
 
   - name: package
+    serial: true
+    serial_groups:
+    - base
+    - update
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
@@ -261,7 +296,11 @@ jobs:
       - get: server2019_update
         trigger: true
         passed:
-        - construct             
+        - construct
+      - get: one-time-trigger
+        trigger: true 
+        passed:
+        - construct                       
       - task: package
         file: pipeline-resources/tasks/package.yml
         image: windows-stemcell-concourse-image

@@ -83,7 +83,7 @@ baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}
 # mutually destroy vm upon cloning
 stembuildVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
 echo "--------------------------------------------------------"
-echo "Destroy Base VM"
+echo "Destroy Stembuild VM ${stembuild_vm_name} if already exists"
 echo "--------------------------------------------------------"
 destroyVM "${stembuildVMIPath}"
 

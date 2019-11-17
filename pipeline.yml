@@ -59,7 +59,7 @@ resources:
     secret_access_key: ((s3.secret-access-key))
     bucket: ((s3.bucket))
     #versioned_file: stemcell/bosh-stemcell-2019.12-vsphere-esxi-windows2019-go_agent.tgz
-		regexp: stemcell/bosh-stemcell-(.*)-vsphere-esxi-(.*)-go_agent.tgz
+    regexp: stemcell/bosh-stemcell-(.*)-vsphere-esxi-(.*)-go_agent.tgz
     endpoint: ((s3.endpoint))
 
 vcenter-params: &vcenter-params

@@ -24,22 +24,6 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-use_cert=${use_cert:='false'}
-cert_path=${cert_path:=''}
-
-if [[ ! -z "${vcenter_ca_certs}" ]]; then
-	use_cert="true"
-
-	#write the cert to file locally
-	(echo ${vcenter_ca_certs} | awk '
-		match($0,/- .* -/){
-			val=substr($0,RSTART,RLENGTH)
-			gsub(/- | -/,"",val)
-			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
-
-	cert_path=${ROOT_FOLDER}/cert.crt
-fi
 
 #######################################
 #       Source helper functions
@@ -63,7 +47,7 @@ fi
 stembuildPath="$(find "${ROOT_FOLDER}/stembuild" -iname stembuild-linux-* 2>/dev/null | head -n1)"
 [[ ! -f "${stembuildPath}" ]] && (writeErr "stembuild-linux-* not found in ${stembuildPath}" && exit 1)
 
-chmod +x ${stembuildPath}
+chmod +x "${stembuildPath}"
 
 if [[ -z "${stembuild_vm_name}" ]]; then
 	vers=$(${stembuildPath} -v)
@@ -118,7 +102,7 @@ echo "Start construct"
 echo "--------------------------------------------------------"
 args="-vm-ip '${ip_address}' -vm-username 'administrator' -vm-password '${admin_password}' -vcenter-url '${vcenter_host}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}'"
 
-[[ ! -z ${cert_path} ]] && args="${args} -vcenter-ca-certs '${cert_path}'"
+[[ ${GOVC_INSECURE} -eq 0 ]] && args="${args} -vcenter-ca-certs '${GOVC_TLS_CA_CERTS}'"
 
 cmd="${stembuildPath} construct ${args}"
 

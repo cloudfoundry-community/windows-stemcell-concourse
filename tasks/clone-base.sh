@@ -25,26 +25,10 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-use_cert=${use_cert:='false'}
-cert_path=${cert_path:=''}
 vm_network=${vm_network:='VM Network'}
 vm_cpu=${vm_cpu:=4}
 vm_memory_mb=${vm_memory_mb:=8000}
 vm_resource_pool=${vm_resource_pool:=''}
-
-if [[ ! -z "${vcenter_ca_certs}" ]]; then
-	use_cert="true"
-
-	#write the cert to file locally
-	(echo ${vcenter_ca_certs} | awk '
-		match($0,/- .* -/){
-			val=substr($0,RSTART,RLENGTH)
-			gsub(/- | -/,"",val)
-			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
-
-	cert_path=${ROOT_FOLDER}/cert.crt
-fi
 
 #######################################
 #       Source helper functions

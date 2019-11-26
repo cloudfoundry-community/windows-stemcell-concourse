@@ -25,22 +25,6 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-use_cert=${use_cert:='false'}
-cert_path=${cert_path:=''}
-
-if [[ ! -z "${vcenter_ca_certs}" ]]; then
-	use_cert="true"
-
-	#write the cert to file locally
-	(echo ${vcenter_ca_certs} | awk '
-		match($0,/- .* -/){
-			val=substr($0,RSTART,RLENGTH)
-			gsub(/- | -/,"",val)
-			gsub(OFS,ORS,val)
-			print substr($0,1,RSTART) ORS val ORS substr($0,RSTART+RLENGTH-1)}') >${ROOT_FOLDER}/cert.crt
-
-	cert_path=${ROOT_FOLDER}/cert.crt
-fi
 
 #######################################
 #       Source helper functions
@@ -85,7 +69,7 @@ echo "Start package"
 echo "--------------------------------------------------------"
 args="-vcenter-url '${vcenter_host}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}'"
 
-[[ ! -z ${cert_path} ]] && args="${args} -vcenter-ca-certs '${cert_path}'"
+[[ ${GOVC_INSECURE} -eq 0 ]] && args="${args} -vcenter-ca-certs '${GOVC_TLS_CA_CERTS}'"
 
 cmd="${stembuildPath} package ${args}"
 

@@ -67,7 +67,7 @@ fi
 stembuildPath="$(find "${ROOT_FOLDER}/stembuild" -iname stembuild-linux-* 2>/dev/null | head -n1)"
 [[ ! -f "${stembuildPath}" ]] && (writeErr "stembuild-linux-* not found in ${stembuildPath}" && exit 1)
 
-chmod +x ${stembuildPath}
+chmod +x "${stembuildPath}"
 
 if [[ -z "${stembuild_vm_name}" ]]; then
 	vers=$(${stembuildPath} -v)
@@ -77,23 +77,22 @@ if [[ -z "${stembuild_vm_name}" ]]; then
 	fi
 fi
 
-baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
-# mutually destroy vm upon cloning
-stembuildVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
 echo "--------------------------------------------------------"
-echo "Destroy Base VM"
+echo "Destroy Stembuild VM ${stembuild_vm_name} if already exists"
 echo "--------------------------------------------------------"
-destroyVM "${stembuildVMIPath}"
 
-#
-if ! vmExists "${baseVMIPath}"; then
-	writeErr "base VM not found for clone at path ${iPath}"
-	exit 1
- fi
+stembuildVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
+destroyVM "${stembuildVMIPath}"
 
 echo "--------------------------------------------------------"
 echo "Clone Base VM"
 echo "--------------------------------------------------------"
+
+baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
+if ! vmExists "${baseVMIPath}"; then
+	writeErr "base VM not found for clone at path ${baseVMIPath}"
+	exit 1
+fi
 
 if ! clonevm \
 	"${stembuild_vm_name}" \

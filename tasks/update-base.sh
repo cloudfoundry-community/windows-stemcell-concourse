@@ -120,8 +120,6 @@ echo "--------------------------------------------------------"
 echo "Tools stopped on ${base_vm_name}"
 echo "--------------------------------------------------------"
 
-
-
 echo "--------------------------------------------------------"
 echo "waiting for tools online on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
@@ -137,12 +135,10 @@ echo "--------------------------------------------------------"
 echo "Tools Running on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
 
-
-
 echo "|"
 
 if ! retryop "shutdownVM '${baseVMIPath}'" 6 10; then
-	writeErr "shudown vm"
+	writeErr "shutdown vm"
 	exit 1
 else
 	echo "Done"

@@ -77,17 +77,14 @@ fi
 )
 
 if ! powerOnVM "${baseVMIPath}"; then
-	writeErr "powering on VM"
+	writeErr "powering on VM ${base_vm_name}"
 	exit 1
 else
 	echo "Done"
 fi
 
 echo "--------------------------------------------------------"
-<<<<<<< HEAD
-echo "waiting for vm powered on"
-=======
-echo "waiting for tools online on"
+echo "waiting for tools online on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
 
 while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
@@ -98,10 +95,9 @@ done
 
 echo 
 echo "--------------------------------------------------------"
-echo "Tools Running"
->>>>>>> 94fffb0... shutdown vm
+echo "Tools Running on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
-sleep 20
+
 echo "--------------------------------------------------------"
 echo "Running windows update"
 echo "--------------------------------------------------------"
@@ -125,13 +121,43 @@ for ((i = 1; i <= 3; i++)); do
 	echo -ne "."
 done
 
+echo "--------------------------------------------------------"
+echo "waiting for tools offline on VM ${base_vm_name}"
+echo "--------------------------------------------------------"
+
+while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsNotRunning' ]]
+do	
+	printf .
+	sleep 2
+done
+
+echo 
+echo "--------------------------------------------------------"
+echo "Tools stopped on ${base_vm_name}"
+echo "--------------------------------------------------------"
+
+
+
+echo "--------------------------------------------------------"
+echo "waiting for tools online on VM ${base_vm_name}"
+echo "--------------------------------------------------------"
+
+while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
+do	
+	printf .
+	sleep 10
+done
+
+echo 
+echo "--------------------------------------------------------"
+echo "Tools Running on VM ${base_vm_name}"
+echo "--------------------------------------------------------"
+
+
+
 echo "|"
 
-<<<<<<< HEAD
-if ! retryop "shutdownVM '${baseVMIPath}'" 3 10; then
-=======
-if ! shutdownVM "${baseVMIPath}"; then
->>>>>>> 94fffb0... shutdown vm
+if ! retryop "shutdownVM '${baseVMIPath}'" 6 10; then
 	writeErr "shudown vm"
 	exit 1
 else

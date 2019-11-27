@@ -22,7 +22,7 @@ resources:
   type: git
   source:
     uri: ((tasks.uri))
-    branch: master
+    branch: ((tasks.branch))
   check_every: 1h
 #- name: stembuild-release
 #  type: pivnet

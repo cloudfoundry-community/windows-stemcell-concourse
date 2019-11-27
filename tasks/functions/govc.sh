@@ -83,17 +83,20 @@ function powershellCmd() {
 	echo "Running PS: ${script}"
 
 	local cmd=(C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "${script}")
-	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" "${cmd[@]}"); then
+	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath="${vm_ipath}" -l=${vm_username}:${vm_password} "${cmd[@]}" 2>&1); then
+		echo "${pid}"
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
+	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json 2>&1); then
+		echo "${processInfo}"
 		writeErr "could not get powershell process info on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! exitCode=$(echo "${processInfo}" | jq '.ProcessInfo[0].ExitCode'); then
+	if ! exitCode=$(echo "${processInfo}" | jq '.ProcessInfo[0].ExitCode' 2>&1); then
+		echo "${exitCode}"
 		writeErr "process info not be parsed for powershell command on VM at ${vm_ipath}"
 		return 1
 	fi

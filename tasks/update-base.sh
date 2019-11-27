@@ -68,19 +68,15 @@ else
 fi
 
 echo "--------------------------------------------------------"
-echo "waiting for tools online on VM ${base_vm_name}"
+echo "Checking guest tool status on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
-
 while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
 do	
 	printf .
 	sleep 10
 done
 
-echo 
-echo "--------------------------------------------------------"
-echo "Tools Running on VM ${base_vm_name}"
-echo "--------------------------------------------------------"
+echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Running windows update"

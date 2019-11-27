@@ -67,6 +67,7 @@ else
 	echo "Done"
 fi
 
+#Once the guest tools are OK, we know the VM finished booting up
 echo "--------------------------------------------------------"
 echo "Checking guest tool status on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
@@ -83,7 +84,8 @@ echo "Running windows update"
 echo "--------------------------------------------------------"
 echo -ne "|"
 for ((i = 1; i <= 3; i++)); do
-	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"); then
+	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"  2>&1); then
+		echo "${exitCode}" #write the error echo'd back
 		writeErr "could not run windows update"
 		exit 1
 	fi
@@ -93,46 +95,32 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	if ! restartVM "${baseVMIPath}"; then
-		writeErr "could not restart VM"
+	if ! ret=$(restartVM "${baseVMIPath}"); then
+		writeErr "could not restart VM, ${ret}"
 		exit 1
 	fi
 
-	echo -ne "."
+	printf "/"
+
+	while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsNotRunning' ]]
+	do
+	 	printf "-"
+	 	sleep 2
+	done
+
+	while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
+	do
+		printf "\\"
+		sleep 10
+	done
+
+	echo -ne "|"
 done
+echo ""
 
 echo "--------------------------------------------------------"
-echo "waiting for tools offline on VM ${base_vm_name}"
+echo "Updates done, shutting down"
 echo "--------------------------------------------------------"
-
-while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsNotRunning' ]]
-do	
-	printf .
-	sleep 2
-done
-
-echo 
-echo "--------------------------------------------------------"
-echo "Tools stopped on ${base_vm_name}"
-echo "--------------------------------------------------------"
-
-echo "--------------------------------------------------------"
-echo "waiting for tools online on VM ${base_vm_name}"
-echo "--------------------------------------------------------"
-
-while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
-do	
-	printf .
-	sleep 10
-done
-
-echo 
-echo "--------------------------------------------------------"
-echo "Tools Running on VM ${base_vm_name}"
-echo "--------------------------------------------------------"
-
-echo "|"
-
 if ! retryop "shutdownVM '${baseVMIPath}'" 6 10; then
 	writeErr "shutdown vm"
 	exit 1

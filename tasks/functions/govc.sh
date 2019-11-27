@@ -82,26 +82,28 @@ function powershellCmd() {
 
 	echo "Running PS: ${script}"
 
-	local cmd=(C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "${script}")
-	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath="${vm_ipath}" -l=${vm_username}:${vm_password} "${cmd[@]}" 2>&1); then
+	local cmd="C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command \"${script}\""
+	
+	#echo "${GOVC_EXE} guest.start -vm.ipath=\"${vm_ipath}\" -l="${vm_username}:${vm_password}" ${cmd}"
+	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" ${cmd} 2>&1); then
 		echo "${pid}"
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json 2>&1); then
+	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l="${vm_username}:${vm_password}" -p=${pid} -X=true -x -json 2>&1); then
 		echo "${processInfo}"
-		writeErr "could not get powershell process info on VM at ${vm_ipath}"
+		writeErr "could not get powershell process ${pid} info on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! exitCode=$(echo "${processInfo}" | jq '.ProcessInfo[0].ExitCode' 2>&1); then
+	if ! exitCode=$(echo "${processInfo}" | jq '.ProcessInfo[0].ExitCode'); then
 		echo "${exitCode}"
 		writeErr "process info not be parsed for powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	echo "Exit code: ${exitCode}"
+	echo "${exitCode}"
 	return 0
 }
 
@@ -342,11 +344,13 @@ function retryop()
 function restartVM() {
 	local vm_ipath="${1}"
 
-	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true; then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true 2>&1); then
+		echo "${ret}"
 		writeErr "Could not restart VM at ${vm_ipath}"
 		return 1
 	fi
 
+	echo "VM ${vm_ipath} succesfully restarted"
 	return 0
 }
 
@@ -394,7 +398,7 @@ function powerOffVM() {
 function shutdownVM() {
 	local vm_ipath="${1}"
 
-	if ! ${govc} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true; then
+	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true; then
 		writeErr "Could not shutdown VM at ${vm_ipath}"
 		return 1
 	fi

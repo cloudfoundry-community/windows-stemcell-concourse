@@ -67,7 +67,7 @@ else
 	echo "Done"
 fi
 
-#Once the guest tools are OK, we know the VM finished booting up
+#Wait for windows to completely boot up
 echo "--------------------------------------------------------"
 echo "Checking guest tool status on VM ${base_vm_name}"
 echo "--------------------------------------------------------"
@@ -95,8 +95,8 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	if ! ret=$(restartVM "${baseVMIPath}"); then
-		writeErr "could not restart VM, ${ret}"
+	if ! ret=$(shutdownVM "${baseVMIPath}"); then
+		writeErr "could not shutdown VM, ${ret}"
 		exit 1
 	fi
 
@@ -107,14 +107,29 @@ for ((i = 1; i <= 3; i++)); do
 	 	printf "-"
 	 	sleep 2
 	done
+	
+	sleep 25s #this is very hacky
+	
+	if ! ret=$(powerOnVM "${baseVMIPath}"); then
+		writeErr "could not power on VM, ${ret}"
+		exit 1
+	fi
 
-	while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
+	while [[ $(getPowerState ${baseVMIPath}) != *"poweredOn"* ]]
 	do
 		printf "\\"
 		sleep 10
 	done
 
+	#Wait for windows to completely boot up
+	while [[ $(getToolsStatus "${baseVMIPath}") != 'toolsOk' ]]
+	do
+		printf "."
+		sleep 10
+	done
+
 	echo -ne "|"
+	sleep 25s #this is very hacky
 done
 echo ""
 

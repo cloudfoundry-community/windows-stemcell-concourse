@@ -266,12 +266,11 @@ function getPowerState() {
 function powerOnVM() {
 	local vm_ipath="${1}"
 
-	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true); then
 		if [[ "${ret}" == *"current state (Powered on)"* ]]; then
 			return 0
 		else
-			writeErr "${info}"
-			writeErr "Could not power on VM at ${vm_ipath}"
+			writeErr "Could not power on VM at ${vm_ipath}, ${ret}"
 			return 1
 		fi
 	fi
@@ -345,8 +344,7 @@ function restartVM() {
 	local vm_ipath="${1}"
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true 2>&1); then
-		echo "${ret}"
-		writeErr "Could not restart VM at ${vm_ipath}"
+		writeErr "Could not restart VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
@@ -381,8 +379,8 @@ function connectDevice() {
 function powerOffVM() {
 	local vm_ipath="${1}"
 
-	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true; then
-		writeErr "Could not power off VM at ${vm_ipath}"
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true 2>&1); then
+		writeErr "Could not power off VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
@@ -398,8 +396,8 @@ function powerOffVM() {
 function shutdownVM() {
 	local vm_ipath="${1}"
 
-	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true; then
-		writeErr "Could not shutdown VM at ${vm_ipath}"
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true 2>&1); then
+		writeErr "Could not shutdown VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 

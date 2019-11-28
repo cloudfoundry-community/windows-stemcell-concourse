@@ -23,7 +23,8 @@ resources:
   source:
     uri: ((tasks.uri))
     branch: ((tasks.branch))
-  check_every: 1h
+	check_every: 1h
+	
 #- name: stembuild-release
 #  type: pivnet
 #  source:
@@ -50,8 +51,9 @@ resources:
   type: git
   source:
     uri: ((tasks.uri))
-    branch: master
+    branch: ((tasks.branch))
   check_every: 1h
+  
 - name: stemcell-store
   type: s3
   source:
@@ -123,7 +125,7 @@ jobs:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
       - get: stembuild-release
-        #trigger: true #start the pipeline whenever there is a new stembuild
+        trigger: true #start the pipeline whenever there is a new stembuild
         params:
           globs:
             - stembuild-linux-*
@@ -144,6 +146,8 @@ jobs:
         trigger: true
         passed: [create-base]
       - get: stembuild-release
+        trigger: true
+        passed: [update-base]
         params:
           globs:
             - stembuild-linux-*
@@ -165,6 +169,8 @@ jobs:
         passed: [clone-base]
       - get: lgpo
       - get: stembuild-release
+        trigger: true
+        passed: [clone-base]
         params:
           globs:
             - stembuild-linux-*
@@ -187,6 +193,8 @@ jobs:
         trigger: true
         passed: [construct]
       - get: stembuild-release
+        trigger: true
+        passed: [construct]
         params:
           globs:
             - stembuild-linux-*

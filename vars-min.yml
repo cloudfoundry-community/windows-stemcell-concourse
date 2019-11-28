@@ -6,6 +6,7 @@ os-version: "" #1709|1803|2019
 pivnet-token:  #if using the PivNet distribution of stembuild
 tasks:
   uri: https://github.com/cloudfoundry-community/windows-stemcell-concourse.git
+  branch: master
 
 ###########################################
 #STEMCELL STORAGE

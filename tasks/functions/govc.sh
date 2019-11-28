@@ -82,23 +82,28 @@ function powershellCmd() {
 
 	echo "Running PS: ${script}"
 
-	local cmd=(C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command "${script}")
-	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" "${cmd[@]}"); then
+	local cmd="C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe -NoProfile -Command \"${script}\""
+	
+	#echo "${GOVC_EXE} guest.start -vm.ipath=\"${vm_ipath}\" -l="${vm_username}:${vm_password}" ${cmd}"
+	if ! pid=$(${GOVC_EXE} guest.start -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" ${cmd} 2>&1); then
+		echo "${pid}"
 		writeErr "could not run powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} -p=${pid} -X=true -x -json); then
-		writeErr "could not get powershell process info on VM at ${vm_ipath}"
+	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l="${vm_username}:${vm_password}" -p=${pid} -X=true -x -json 2>&1); then
+		echo "${processInfo}"
+		writeErr "could not get powershell process ${pid} info on VM at ${vm_ipath}"
 		return 1
 	fi
 
 	if ! exitCode=$(echo "${processInfo}" | jq '.ProcessInfo[0].ExitCode'); then
+		echo "${exitCode}"
 		writeErr "process info not be parsed for powershell command on VM at ${vm_ipath}"
 		return 1
 	fi
 
-	echo "Exit code: ${exitCode}"
+	echo "${exitCode}"
 	return 0
 }
 
@@ -261,17 +266,73 @@ function getPowerState() {
 function powerOnVM() {
 	local vm_ipath="${1}"
 
-	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true); then
 		if [[ "${ret}" == *"current state (Powered on)"* ]]; then
 			return 0
 		else
-			writeErr "${info}"
-			writeErr "Could not power on VM at ${vm_ipath}"
+			writeErr "Could not power on VM at ${vm_ipath}, ${ret}"
 			return 1
 		fi
 	fi
 
+	sleep 25s #this is so vsphere can keep up with the executing script
 	return 0
+}
+
+
+######################################
+# Description:
+#
+# Arguments:
+# | jq -r '.VirtualMachines[].Guest.ToolsStatus'
+#######################################
+function getToolsStatus() {
+	local vm_ipath="${1}"
+
+	if ! info=$(getInfo "${vm_ipath}"); then
+		echo "${info}"
+		return 1
+	fi # 2>&1
+
+	if ! toolsStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsStatus'); then
+		writeErr "Could not parse vm info at ${vm_ipath}"
+		return 1
+	elif [[ -z "${toolsStatus}" ]]; then
+		writeErr "Tools state could not be parsed for VM at ${vm_ipath}"
+		return 1
+	fi
+
+	echo "${toolsStatus}"
+	return 0
+}
+
+######################################
+# Description:
+#
+# Arguments:
+#
+#######################################
+function retryop()
+{
+  retry=0
+  max_retries=$2
+  interval=$3
+  while [ ${retry} -lt ${max_retries} ]; do
+    echo "Operation: $1, Retry #${retry}"
+    eval $1
+    if [ $? -eq 0 ]; then
+      echo "Successful"
+      break
+    else
+      let retry=retry+1
+      echo "Sleep $interval seconds, then retry..."
+      sleep $interval
+    fi
+  done
+  if [ ${retry} -eq ${max_retries} ]; then
+    echo "Operation failed: $1"
+    exit 1
+  fi
 }
 
 ######################################
@@ -283,11 +344,12 @@ function powerOnVM() {
 function restartVM() {
 	local vm_ipath="${1}"
 
-	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true; then
-		writeErr "Could not restart VM at ${vm_ipath}"
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true 2>&1); then
+		writeErr "Could not restart VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
+	sleep 25s #this is so vsphere can keep up with the executing script
 	return 0
 }
 
@@ -318,14 +380,32 @@ function connectDevice() {
 function powerOffVM() {
 	local vm_ipath="${1}"
 
-	if ! ${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true; then
-		writeErr "Could not power off VM at ${vm_ipath}"
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true 2>&1); then
+		writeErr "Could not power off VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
+	sleep 25s #this is so vsphere can keep up with the executing script
 	return 0
 }
 
+######################################
+# Description:
+#
+# Arguments:
+#
+#######################################
+function shutdownVM() {
+	local vm_ipath="${1}"
+
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true 2>&1); then
+		writeErr "Could not shutdown VM at ${vm_ipath}, ${ret}"
+		return 1
+	fi
+
+	sleep 25s #this is so vsphere can keep up with the executing script
+	return 0
+}
 ######################################
 # Description:
 #

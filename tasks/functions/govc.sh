@@ -275,7 +275,7 @@ function powerOnVM() {
 		fi
 	fi
 
-	sleep 25s #this is so vsphere can keep up with the executing script
+	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
 	return 0
 }
 
@@ -349,7 +349,7 @@ function restartVM() {
 		return 1
 	fi
 
-	sleep 25s #this is so vsphere can keep up with the executing script
+	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
 	return 0
 }
 
@@ -385,7 +385,7 @@ function powerOffVM() {
 		return 1
 	fi
 
-	sleep 25s #this is so vsphere can keep up with the executing script
+	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
 	return 0
 }
 
@@ -403,7 +403,7 @@ function shutdownVM() {
 		return 1
 	fi
 
-	sleep 25s #this is so vsphere can keep up with the executing script
+	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
 	return 0
 }
 ######################################

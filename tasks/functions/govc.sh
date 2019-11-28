@@ -275,6 +275,7 @@ function powerOnVM() {
 		fi
 	fi
 
+	sleep 25s #this is so vsphere can keep up with the executing script
 	return 0
 }
 
@@ -348,7 +349,7 @@ function restartVM() {
 		return 1
 	fi
 
-	echo "VM ${vm_ipath} succesfully restarted"
+	sleep 25s #this is so vsphere can keep up with the executing script
 	return 0
 }
 
@@ -384,6 +385,7 @@ function powerOffVM() {
 		return 1
 	fi
 
+	sleep 25s #this is so vsphere can keep up with the executing script
 	return 0
 }
 
@@ -401,6 +403,7 @@ function shutdownVM() {
 		return 1
 	fi
 
+	sleep 25s #this is so vsphere can keep up with the executing script
 	return 0
 }
 ######################################

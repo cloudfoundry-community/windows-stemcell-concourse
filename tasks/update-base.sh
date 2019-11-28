@@ -63,14 +63,9 @@ fi
 if ! powerOnVM "${baseVMIPath}"; then
 	writeErr "powering on VM ${base_vm_name}"
 	exit 1
-else
-	echo "Done"
 fi
 
 #Wait for windows to completely boot up
-echo "--------------------------------------------------------"
-echo "Checking guest tool status on VM ${base_vm_name}"
-echo "--------------------------------------------------------"
 while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
 do	
 	printf .
@@ -82,7 +77,7 @@ echo "Done"
 echo "--------------------------------------------------------"
 echo "Running windows update"
 echo "--------------------------------------------------------"
-echo -ne "|"
+printf "|"
 for ((i = 1; i <= 3; i++)); do
 	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"  2>&1); then
 		echo "${exitCode}" #write the error echo'd back
@@ -107,9 +102,7 @@ for ((i = 1; i <= 3; i++)); do
 	 	printf "-"
 	 	sleep 2
 	done
-	
-	sleep 25s #this is very hacky
-	
+
 	if ! ret=$(powerOnVM "${baseVMIPath}"); then
 		writeErr "could not power on VM, ${ret}"
 		exit 1
@@ -128,10 +121,10 @@ for ((i = 1; i <= 3; i++)); do
 		sleep 10
 	done
 
-	echo -ne "|"
-	sleep 25s #this is very hacky
+	printf "|"
 done
 echo ""
+echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Updates done, shutting down"

@@ -23,8 +23,8 @@ resources:
   source:
     uri: ((tasks.uri))
     branch: ((tasks.branch))
-	check_every: 1h
-	
+  check_every: 1h
+  
 #- name: stembuild-release
 #  type: pivnet
 #  source:
@@ -63,6 +63,11 @@ resources:
     #versioned_file: stemcell/bosh-stemcell-2019.12-vsphere-esxi-windows2019-go_agent.tgz
     regexp: stemcell/bosh-stemcell-(.*)-vsphere-esxi-(.*)-go_agent.tgz
     endpoint: ((s3.endpoint))
+
+- name: one-time-trigger
+  type: time
+  source:
+    interval: 999999h
 
 vcenter-params: &vcenter-params
   vcenter_ca_certs: ((vcenter-ca-certs))
@@ -105,7 +110,11 @@ os-params: &os-params
 
 jobs:
   - name: create-base
+    serial: true
+    serial_groups: [ base ]
     plan:
+      - get: one-time-trigger
+        trigger: true
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
       - get: autounattend
@@ -121,7 +130,11 @@ jobs:
           <<: *os-params
 
   - name: update-base
+    serial: true
+    serial_groups: [ base ]
     plan:
+      - get: one-time-trigger
+        passed: [ create-base ]
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
       - get: stembuild-release
@@ -140,14 +153,13 @@ jobs:
           <<: *os-params
 
   - name: clone-base
+    serial: true
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
         trigger: true
-        passed: [create-base]
-      - get: stembuild-release
-        trigger: true
         passed: [update-base]
+      - get: stembuild-release
         params:
           globs:
             - stembuild-linux-*
@@ -161,7 +173,8 @@ jobs:
           <<: *vcenter-params
           <<: *vm-params
         
-  - name: construct
+  - name: stembuild
+    serial: true
     plan:
       - get: windows-stemcell-concourse-image
       - get: pipeline-resources
@@ -169,8 +182,6 @@ jobs:
         passed: [clone-base]
       - get: lgpo
       - get: stembuild-release
-        trigger: true
-        passed: [clone-base]
         params:
           globs:
             - stembuild-linux-*
@@ -185,19 +196,6 @@ jobs:
           <<: *vcenter-params
           <<: *vm-params
           <<: *os-params
-
-  - name: package
-    plan:
-      - get: windows-stemcell-concourse-image
-      - get: pipeline-resources
-        trigger: true
-        passed: [construct]
-      - get: stembuild-release
-        trigger: true
-        passed: [construct]
-        params:
-          globs:
-            - stembuild-linux-*
       - task: package
         file: pipeline-resources/tasks/package.yml
         image: windows-stemcell-concourse-image

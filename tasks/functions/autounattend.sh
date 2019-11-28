@@ -65,24 +65,6 @@ function formatAutoUnattend() {
 	fi
 
 	((command_cnt++))
-	if ! sync_commands=${sync_commands}$(buildPowershellCommand ${command_cnt} "Install Windows Updates 1 of 3" "Get-WUInstall -AcceptAll -IgnoreReboot" Always); then
-		writeErr "Could not set sync command for installing win updates 1"
-		return 1
-	fi
-
-	((command_cnt++))
-	if ! sync_commands=${sync_commands}$(buildPowershellCommand ${command_cnt} "Install Windows Updates 2 of 3" "Get-WUInstall -AcceptAll -IgnoreReboot" Always); then
-		writeErr "Could not set sync command for installing win updates 2"
-		return 1
-	fi
-
-	((command_cnt++))
-	if ! sync_commands=${sync_commands}$(buildPowershellCommand ${command_cnt} "Install Windows Updates 3 of 3" "Get-WUInstall -AcceptAll -IgnoreReboot" Always); then
-		writeErr "Could not set sync command for installing win updates 3"
-		return 1
-	fi
-
-	((command_cnt++))
 	if ! sync_commands=${sync_commands}$(buildPowershellCommand ${command_cnt} "Prepare OOBE" "C:/Windows/System32/Sysprep/sysprep.exe /oobe /shutdown /unattend:c:/windows/system32/sysprep/unattend.xml" OnRequest); then
 		writeErr "Could not set sync command for prepping OOBE"
 		return 1

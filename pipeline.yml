@@ -17,14 +17,14 @@ resources:
   source:
     repository: cfcommunity/windows-stemcell-concourse
     tag: latest
-  
+
 - name: pipeline-resources
   type: git
   source:
     uri: ((tasks.uri))
     branch: ((tasks.branch))
   check_every: 1h
-  
+
 #- name: stembuild-release
 #  type: pivnet
 #  source:
@@ -39,7 +39,7 @@ resources:
     owner: cloudfoundry-incubator
     repository: stembuild
     tag_filter: ((os-version)).(.*)
-  check_every: 1h  
+  check_every: 1h
 
 - name: lgpo
   type: file-url
@@ -53,7 +53,7 @@ resources:
     uri: ((tasks.uri))
     branch: ((tasks.branch))
   check_every: 1h
-  
+
 - name: stemcell-store
   type: s3
   source:
@@ -160,6 +160,7 @@ jobs:
         trigger: true
         passed: [update-base]
       - get: stembuild-release
+        passed: [update-base]
         params:
           globs:
             - stembuild-linux-*
@@ -172,7 +173,7 @@ jobs:
         params:
           <<: *vcenter-params
           <<: *vm-params
-        
+
   - name: stembuild
     serial: true
     plan:
@@ -182,6 +183,7 @@ jobs:
         passed: [clone-base]
       - get: lgpo
       - get: stembuild-release
+        passed: [clone-base]
         params:
           globs:
             - stembuild-linux-*

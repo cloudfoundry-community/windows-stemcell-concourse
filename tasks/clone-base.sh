@@ -39,7 +39,8 @@ source "${THIS_FOLDER}/functions/govc.sh"
 if ! initializeGovc "${vcenter_host}" \
 	"${vcenter_username}" \
 	"${vcenter_password}" \
-	"${vcenter_ca_certs}" ; then
+	"${vcenter_ca_certs}" \
+	"${vcenter_datacenter}"; then
 	writeErr "error initializing govc"
 	exit 1
 fi

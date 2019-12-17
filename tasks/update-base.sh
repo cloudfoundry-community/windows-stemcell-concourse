@@ -34,7 +34,8 @@ source "${THIS_FOLDER}/functions/govc.sh"
 if ! initializeGovc "${vcenter_host}" \
 	"${vcenter_username}" \
 	"${vcenter_password}" \
-	"${vcenter_ca_certs}" ; then
+	"${vcenter_ca_certs}" \
+	"${vcenter_datacenter}"; then
 	writeErr "error initializing govc"
 	exit 1
 fi
@@ -97,6 +98,12 @@ for ((i = 1; i <= 3; i++)); do
 
 	printf "/"
 
+	while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]
+	do
+		printf "-"
+		sleep 10
+	done
+
 	while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsNotRunning' ]]
 	do
 	 	printf "-"
@@ -108,7 +115,7 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	while [[ $(getPowerState ${baseVMIPath}) != *"poweredOn"* ]]
+	while [[ $(getPowerState "${baseVMIPath}") != *"poweredOn"* ]]
 	do
 		printf "\\"
 		sleep 10

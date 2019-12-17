@@ -113,17 +113,16 @@ jobs:
     serial: true
     serial_groups: [ base ]
     plan:
-      - get: one-time-trigger
-        trigger: true
-      - get: windows-stemcell-concourse-image
-      - get: pipeline-resources
-      - get: autounattend
+      - in_parallel:          
+        - get: one-time-trigger
+          trigger: true
+        - get: windows-stemcell-concourse-image
+        - get: pipeline-resources
       - task: create-base
         file: pipeline-resources/tasks/create-base.yml
         image: windows-stemcell-concourse-image
         input_mapping:
-          autounattend: autounattend
-          pipeline-resources: pipeline-resources
+          autounattend: pipeline-resources
         params:
           <<: *vcenter-params
           <<: *vm-params
@@ -133,15 +132,16 @@ jobs:
     serial: true
     serial_groups: [ base ]
     plan:
-      - get: one-time-trigger
-        passed: [ create-base ]
-      - get: windows-stemcell-concourse-image
-      - get: pipeline-resources
-      - get: stembuild-release
-        trigger: true #start the pipeline whenever there is a new stembuild
-        params:
-          globs:
-            - stembuild-linux-*
+      - in_parallel:
+        - get: one-time-trigger
+          passed: [ create-base ]
+        - get: windows-stemcell-concourse-image
+        - get: pipeline-resources
+        - get: stembuild-release
+          trigger: true #start the pipeline whenever there is a new stembuild
+          params:
+            globs:
+              - stembuild-linux-*
       - task: update-base
         file: pipeline-resources/tasks/update-base.yml
         image: windows-stemcell-concourse-image
@@ -155,15 +155,16 @@ jobs:
   - name: clone-base
     serial: true
     plan:
-      - get: windows-stemcell-concourse-image
-      - get: pipeline-resources
-        trigger: true
-        passed: [update-base]
-      - get: stembuild-release
-        passed: [update-base]
-        params:
-          globs:
-            - stembuild-linux-*
+      - in_parallel:
+        - get: windows-stemcell-concourse-image
+        - get: pipeline-resources
+          trigger: true
+          passed: [update-base]
+        - get: stembuild-release
+          passed: [update-base]
+          params:
+            globs:
+              - stembuild-linux-*
       - task: clone-base
         file: pipeline-resources/tasks/clone-base.yml
         image: windows-stemcell-concourse-image
@@ -177,16 +178,17 @@ jobs:
   - name: stembuild
     serial: true
     plan:
-      - get: windows-stemcell-concourse-image
-      - get: pipeline-resources
-        trigger: true
-        passed: [clone-base]
-      - get: lgpo
-      - get: stembuild-release
-        passed: [clone-base]
-        params:
-          globs:
-            - stembuild-linux-*
+      - in_parallel:
+        - get: windows-stemcell-concourse-image
+        - get: pipeline-resources
+          trigger: true
+          passed: [clone-base]
+        - get: lgpo
+        - get: stembuild-release
+          passed: [clone-base]
+          params:
+            globs:
+              - stembuild-linux-*
       - task: construct
         file: pipeline-resources/tasks/construct.yml
         image: windows-stemcell-concourse-image
@@ -211,3 +213,5 @@ jobs:
       - put: stemcell-store
         params:
           file: stemcell/*.tgz
+        get_params:
+          skip_download: true

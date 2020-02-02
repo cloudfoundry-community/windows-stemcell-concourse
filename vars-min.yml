@@ -55,5 +55,5 @@ disk-controller-type: ''
 iso-folder: ''
 language: ''
 product-key: ''
-vmware-tools-uri: ''
-windows-update-module-uri: ''
+vmware-tools-uri: '' #must be less than 250 chars
+windows-update-module-uri: '' #must be less than 250 chars

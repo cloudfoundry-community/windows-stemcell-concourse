@@ -1,24 +1,40 @@
 
 ###########################################
-#RELEASE SOURCE
+#ASSET LOCATIONS
 ###########################################
-os-version: "" #1709|1803|2019
-pivnet-token:  #if using the PivNet distribution of stembuild
+stembuild-file:
+  url: 
+  file-name: #stembuild-linux-x86_64-XXXX.XX
+
 tasks:
-  uri: https://github.com/cloudfoundry-community/windows-stemcell-concourse.git
+  uri: 
+  branch: "master"
+  #username: ""
+  #password: ""
+  skip_ssl_verification: true
+
+LGPO:
+  url: 
+
+windows-stemcell-concourse-image:
+  image-url: 
+
+concourse-curl-resource:
+  image-url: 
 
 ###########################################
 #STEMCELL STORAGE
 ###########################################
 s3:
-  access-key-id: ""
-  secret-access-key: ""
-  bucket: ""
+  access-key-id: 
+  secret-access-key: 
+  bucket: 
+  endpoint: 
 
 ###########################################
 #REQUIRED PARAMS
 ###########################################
-vcenter-url: "" #The DNS or IP address to vcenter server
+vcenter-host: "" #The DNS or IP address to vcenter server
 vcenter-username: "" #User to interact with vcenter server
 vcenter-password: "" #Password for vcenter user to work as
 vcenter-datacenter: "" #Vsphere datacenter name

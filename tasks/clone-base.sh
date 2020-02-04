@@ -61,6 +61,21 @@ if [[ -z "${stembuild_vm_name}" ]]; then
 	fi
 fi
 
+baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
+if ! vmExists "${baseVMIPath}"; then
+	writeErr "base VM not found for clone at path ${baseVMIPath}"
+	exit 1
+fi
+
+echo "--------------------------------------------------------"
+echo "Check tools status"
+echo "--------------------------------------------------------"
+
+if [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]; then
+	writeErr "Vmware tools are not installed or running an old version, on vm ${baseVMIPath}. Update to continue task."
+	exit 1
+fi
+
 echo "--------------------------------------------------------"
 echo "Destroy Stembuild VM ${stembuild_vm_name} if already exists"
 echo "--------------------------------------------------------"
@@ -68,15 +83,12 @@ echo "--------------------------------------------------------"
 stembuildVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
 destroyVM "${stembuildVMIPath}"
 
+
 echo "--------------------------------------------------------"
 echo "Clone Base VM"
 echo "--------------------------------------------------------"
 
-baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
-if ! vmExists "${baseVMIPath}"; then
-	writeErr "base VM not found for clone at path ${baseVMIPath}"
-	exit 1
-fi
+
 
 if ! clonevm \
 	"${stembuild_vm_name}" \

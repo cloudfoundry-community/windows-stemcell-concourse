@@ -65,6 +65,13 @@ if ! powerOnVM "${baseVMIPath}"; then
 	exit 1
 fi
 
+if [[ $(getToolsStatus "${baseVMIPath}" ) == *'toolsNotInstalled' ]] 
+		|| [[ $(getToolsStatus "${baseVMIPath}" ) == *'toolsNotRunning' ]]
+		|| [[ $(getToolsStatus "${baseVMIPath}" ) == *'toolsOld' ]]; then
+	writeErr "Vmware tools installed are not installed or running an old version, on vm ${base_vm_name}. Update to continue task."
+	exit 1
+fi
+
 #Wait for windows to completely boot up
 while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
 do	

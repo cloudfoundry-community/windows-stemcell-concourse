@@ -60,24 +60,39 @@ fi
 	exit 1
 )
 
-if ! powerOnVM "${baseVMIPath}"; then
-	writeErr "powering on VM ${base_vm_name}"
+if ! powerState=$(getPowerState "${baseVMIPath}"); then
+	writeErr "could not get power state for VM at path ${baseVMIPath}"
 	exit 1
 fi
 
-if [[ $(getToolsStatus "${baseVMIPath}" ) == *'toolsNotInstalled' ]] 
-		|| [[ $(getToolsStatus "${baseVMIPath}" ) == *'toolsNotRunning' ]]
-		|| [[ $(getToolsStatus "${baseVMIPath}" ) == *'toolsOld' ]]; then
-	writeErr "Vmware tools installed are not installed or running an old version, on vm ${base_vm_name}. Update to continue task."
+echo "Powered state: $powerState"
+
+if [[ ! ${powerState} == "poweredOn" ]]; then
+	if ! powerOnVM "${baseVMIPath}"; then
+		writeErr "powering on VM ${base_vm_name}"
+		exit 1
+	fi
+fi
+
+if ! toolStatus=$(getToolsStatus "${baseVMIPath}" ); then
+	writeErr "could not get tool status for VM at path ${baseVMIPath}"
 	exit 1
 fi
 
-#Wait for windows to completely boot up
-while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
-do	
-	printf .
-	sleep 10
-done
+#Wait for windows to completely boot up, a blank or toolsNotRunning value indicates it's still baking
+while read status; do
+	echo "Tool status: ${status}"
+	if [[ ${status} == "toolsOk" ]]; then
+		break
+	fi
+
+	if [[ ${status} =~ ^(toolsNotInstalled|toolsOld)$ ]]; then
+		writeErr "Vmware tools are not installed or running an old version, on vm ${base_vm_name}. Please fix to continue."
+		exit 1
+	fi
+
+	sleep 5
+done <<< ${toolStatus}
 
 echo "Done"
 
@@ -92,7 +107,7 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	if [[ ${exitCode} == "1" ]]; then
+	if [[ ${exitCode} == 1 ]]; then
 		writeErr "windows update process exited with error"
 		exit 1
 	fi
@@ -104,25 +119,30 @@ for ((i = 1; i <= 3; i++)); do
 
 	printf "/"
 
-	while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsNotRunning' ]]
-	do
+	while read status; do
+		if [[ $status == "toolsNotRunning" ]]; then
+			break
+		fi
+		
 	 	printf "-"
 	 	sleep 2
-	done
+	done <<< $(getToolsStatus "${baseVMIPath}")
+
+	sleep 20 #There is a brief time between when the tools process is terminated and the VM is actually powered off
 
 	if ! ret=$(powerOnVM "${baseVMIPath}"); then
-		writeErr "could not power on VM, ${ret}"
+		writeErr "${ret}"
 		exit 1
 	fi
 
-	while [[ $(getPowerState ${baseVMIPath}) != *"poweredOn"* ]]
+	while [[ $(getPowerState ${baseVMIPath}) != "poweredOn"* ]]
 	do
 		printf "\\"
 		sleep 10
 	done
 
 	#Wait for windows to completely boot up
-	while [[ $(getToolsStatus "${baseVMIPath}") != 'toolsOk' ]]
+	while [[ $(getToolsStatus "${baseVMIPath}") != "toolsOk" ]]
 	do
 		printf "."
 		sleep 10

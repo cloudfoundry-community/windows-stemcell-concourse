@@ -89,24 +89,64 @@ echo "Done"
 echo "--------------------------------------------------------"
 echo "Start the cloned VM"
 echo "--------------------------------------------------------"
-if ! powerOnVM "${iPath}"; then
-	writeErr "powering on VM for construct"
-	return 1
-else
-	echo "Done"
-	sleep 30s #let the VM get started
+if ! powerState=$(getPowerState "${iPath}"); then
+	writeErr "could not get power state for VM at path ${iPath}"
+	exit 1
 fi
+
+echo "Powered state: $powerState"
+
+if [[ ! ${powerState} == "poweredOn" ]]; then
+	if ! powerOnVM "${iPath}"; then
+		writeErr "powering on VM ${iPath}"
+		exit 1
+	fi
+fi
+
+#Wait for windows to completely boot up, a blank or toolsNotRunning value indicates it's still baking
+while read status; do
+	echo "Tool status: ${status}"
+	if [[ ${status} == "toolsOk" ]]; then
+		break
+	fi
+
+	if [[ ${status} =~ ^(toolsNotInstalled|toolsOld)$ ]]; then
+		writeErr "Vmware tools are not installed or running an old version, on vm ${iPath}. Please fix to continue."
+		exit 1
+	fi
+
+	sleep 5
+done <<< ${toolStatus}
+
+echo "Done"
+
+echo "--------------------------------------------------------"
+echo "Patch winrm"
+echo "--------------------------------------------------------"
+winRm_cmd="winrm set winrm/config/client/auth '@{Basic=\\\"true\\\"}';winrm set winrm/config/service/auth '@{Basic=\\\"true\\\"}';winrm set winrm/config/service '@{AllowUnencrypted=\\\"true\\\"}';Enable-NetFirewallRule -DisplayName \\\"Windows Remote Management (HTTP-In)\\\";netsh firewall add portopening TCP 5985 \\\"Port 5985\\\""
+
+#echo ${winRm_cmd}
+if ! exitCode=$(powershellCmd "${iPath}" "administrator" "${admin_password}" "${winRm_cmd}"  2>&1); then
+	echo "${exitCode}" #write the error echo'd back
+	writeErr "could not run winrm patch"
+	exit 1
+fi
+
+if [[ ${exitCode} == 1 ]]; then
+	writeErr "winrm patch process exited with error"
+	exit 1
+fi
+
+echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Start construct"
 echo "--------------------------------------------------------"
-args="-vm-ip '${ip_address}' -vm-username 'administrator' -vm-password '${admin_password}' -vcenter-url '${vcenter_host}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}'"
-
-[[ ${GOVC_INSECURE} -eq 0 ]] && args="${args} -vcenter-ca-certs '${GOVC_TLS_CA_CERTS}'"
+args="-vm-ip '${ip_address}' -vm-username 'administrator' -vm-password '${admin_password}' -vcenter-url '${vcenter_host}' -vcenter-username '${vcenter_username}' -vcenter-password '${vcenter_password}' -vm-inventory-path '${iPath}' -vcenter-ca-certs '${GOVC_TLS_CA_CERTS}'"
 
 cmd="${stembuildPath} construct ${args}"
 
-echo "${cmd}"
+#echo "${cmd}"
 if ! eval ${cmd}; then
 	writeErr "running construct"
 	exit 1

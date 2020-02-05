@@ -10,7 +10,7 @@ That said, the autounattend xml is complex and confusing. So attempts are made t
 
 ## Documentation
 
-For your reading pleasure we have moved documentation of the proejct to wiki. [Have a look](https://github.com/cloudfoundry-community/windows-stemcell-concourse/wiki).
+For your reading pleasure we have moved documentation of the project to wiki. [Have a look](https://github.com/cloudfoundry-community/windows-stemcell-concourse/wiki).
 
 ## Best practice for patching the base operating system
 

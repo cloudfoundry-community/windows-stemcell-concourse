@@ -204,7 +204,7 @@ timeout ${windows_install_timeout_minutes}m bash <<EOT
 		echo -ne "."
 		sleep 1m
 	done
-EOT
+EOT || true
 
 if [[ $? == 124 ]]; then
 	writeErr "Timed out waiting for windows to install"

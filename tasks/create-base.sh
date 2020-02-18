@@ -201,7 +201,7 @@ echo -ne "|"
 
 set +e #turn "exit on error" off so we can catch the timeout
 
-timeout ${windows_install_timeout_minutes}m bash <<EOT
+timeout --foreground ${windows_install_timeout_minutes}m bash <<EOT
 	while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
 		echo -ne "."
 		sleep 1m

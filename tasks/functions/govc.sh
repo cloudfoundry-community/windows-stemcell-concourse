@@ -428,7 +428,7 @@ function waitForToolStatus(){
 		return 1
 	fi
 
-timeout ${timeout_seconds}s bash <<EOT
+if ! timeout ${timeout_seconds}s bash <<EOT
 	while read status; do
 		echo "Tool status: ${desired_status}"
 		if [[ ${status} == "${desired_status}" ]]; then
@@ -443,7 +443,10 @@ timeout ${timeout_seconds}s bash <<EOT
 		printf "-"
 		sleep 5
 	done <<< $(getToolsStatus "${vm_ipath}")
-EOT
+EOT; then
+	writeErr "Timed out waiting for tool status"
+	return 1
+fi
 
 	echo ""
 

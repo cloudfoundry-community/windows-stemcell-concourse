@@ -29,6 +29,7 @@ vm_network=${vm_network:='VM Network'}
 vm_cpu=${vm_cpu:=4}
 vm_memory_mb=${vm_memory_mb:=8000}
 vm_resource_pool=${vm_resource_pool:=''}
+timeout_seconds=${timeout_seconds:=30}
 
 #######################################
 #       Source helper functions
@@ -56,24 +57,31 @@ chmod +x "${stembuildPath}"
 if [[ -z "${stembuild_vm_name}" ]]; then
 	vers=$(${stembuildPath} -v)
 	if ! stembuild_vm_name=$(parseStembuildVersion "${vers}"); then
-		writeErr "trying to parse stembuild version"
+		writeErr "Trying to parse stembuild version"
 		exit 1
 	fi
 fi
 
 baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
-if ! vmExists "${baseVMIPath}"; then
-	writeErr "base VM not found for clone at path ${baseVMIPath}"
+if ! exists=$(vmExists "${baseVMIPath}"); then
+	writeErr "Error finding base VM at path ${baseVMIPath}"
 	exit 1
 fi
 
-echo "--------------------------------------------------------"
-echo "Check tools status"
-echo "--------------------------------------------------------"
-
-if [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]; then
-	writeErr "Vmware tools are not installed or running an old version, on vm ${baseVMIPath}. Update to continue task."
+[[ ${exists} == "false" ]] && (
+	writeErr "No base VM found at path ${baseVMIPath}"
 	exit 1
+)
+
+if [[ ! ${powerState} == "poweredOff" ]]; then
+	echo "--------------------------------------------------------"
+	echo "Powering off base VM"
+	echo "--------------------------------------------------------"
+
+	if ! powerOffVM "${baseVMIPath}" ${timeout_seconds}; then
+		writeErr "powering on VM ${baseVMIPath}"
+		exit 1
+	fi
 fi
 
 echo "--------------------------------------------------------"
@@ -83,12 +91,9 @@ echo "--------------------------------------------------------"
 stembuildVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
 destroyVM "${stembuildVMIPath}"
 
-
 echo "--------------------------------------------------------"
 echo "Clone Base VM"
 echo "--------------------------------------------------------"
-
-
 
 if ! clonevm \
 	"${stembuild_vm_name}" \

@@ -24,6 +24,7 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
+timeout_seconds=${timeout_seconds:=30}
 
 #######################################
 #       Source helper functions
@@ -68,39 +69,20 @@ fi
 echo "Powered state: $powerState"
 
 if [[ ! ${powerState} == "poweredOn" ]]; then
-	if ! powerOnVM "${baseVMIPath}"; then
+	if ! powerOnVM "${baseVMIPath}" ${timeout_seconds}; then
 		writeErr "powering on VM ${base_vm_name}"
 		exit 1
 	fi
 fi
-
-if ! toolStatus=$(getToolsStatus "${baseVMIPath}" ); then
-	writeErr "could not get tool status for VM at path ${baseVMIPath}"
-	exit 1
-fi
-
-#Wait for windows to completely boot up, a blank or toolsNotRunning value indicates it's still baking
-while read status; do
-	echo "Tool status: ${status}"
-	if [[ ${status} == "toolsOk" ]]; then
-		break
-	fi
-
-	if [[ ${status} =~ ^(toolsNotInstalled|toolsOld)$ ]]; then
-		writeErr "Vmware tools are not installed or running an old version, on vm ${base_vm_name}. Please fix to continue."
-		exit 1
-	fi
-
-	sleep 5
-done <<< ${toolStatus}
 
 echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Running windows update"
 echo "--------------------------------------------------------"
-printf "|"
+
 for ((i = 1; i <= 3; i++)); do
+	echo "    starting ${i}"
 	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"  2>&1); then
 		echo "${exitCode}" #write the error echo'd back
 		writeErr "could not run windows update"
@@ -112,56 +94,28 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	if ! ret=$(shutdownVM "${baseVMIPath}"); then
-		writeErr "could not shutdown VM, ${ret}"
+	if ! shutdownVM "${baseVMIPath}" ${timeout_seconds}; then
+		writeErr "could not shutdown VM"
 		exit 1
 	fi
 
-	printf "/"
-
-	while read status; do
-		if [[ $status == "toolsNotRunning" ]]; then
-			break
-		fi
-		
-	 	printf "-"
-	 	sleep 2
-	done <<< $(getToolsStatus "${baseVMIPath}")
-
-	sleep 20 #There is a brief time between when the tools process is terminated and the VM is actually powered off
-
-	if ! ret=$(powerOnVM "${baseVMIPath}"); then
+	if ! powerOnVM "${baseVMIPath}" ${timeout_seconds}; then
 		writeErr "${ret}"
 		exit 1
 	fi
 
-	while [[ $(getPowerState ${baseVMIPath}) != "poweredOn"* ]]
-	do
-		printf "\\"
-		sleep 10
-	done
-
-	#Wait for windows to completely boot up
-	while [[ $(getToolsStatus "${baseVMIPath}") != "toolsOk" ]]
-	do
-		printf "."
-		sleep 10
-	done
-
-	printf "|"
+	echo "    finished ${i}"
 done
-echo ""
-echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Updates done, shutting down"
 echo "--------------------------------------------------------"
-if ! retryop "shutdownVM '${baseVMIPath}'" 6 10; then
-	writeErr "shutdown vm"
+if ! shutdownVM "${baseVMIPath}" ${timeout_seconds}; then
+	writeErr "could not shutdown vm"
 	exit 1
-else
-	echo "Done"
 fi
+
+echo "Done"
 
 #######################################
 #       Return result

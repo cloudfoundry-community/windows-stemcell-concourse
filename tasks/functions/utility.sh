@@ -65,3 +65,36 @@ function parseStembuildVersion() {
 
 	return 0
 }
+
+######################################
+# Description:
+#
+# Arguments:
+#
+#######################################
+function retryop()
+{
+  retry=0
+  max_retries=$2
+  interval=$3
+
+  while [ ${retry} -lt ${max_retries} ]; do
+    echo "Operation: $1, Retry #${retry}"
+    eval $1
+    if [ $? -eq 0 ]; then
+      echo "Successful"
+      break
+    else
+      let retry=retry+1
+      echo "Sleep $interval seconds, then retry..."
+      sleep $interval
+    fi
+  done
+	
+  if [ ${retry} -eq ${max_retries} ]; then
+    echo "Operation failed: $1"
+    return 1
+  fi
+
+	return 0
+}

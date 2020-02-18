@@ -60,7 +60,7 @@ fi
 
 iPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
 if ! vmExists "${iPath}"; then
-	writeErr "no VM found for package at path ${iPath}"
+	writeErr "no VM found at path ${iPath}"
 	exit 1
 fi
 

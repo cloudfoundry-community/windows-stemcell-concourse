@@ -48,6 +48,7 @@ vm_net_adapter=${vm_net_adapter:='e1000e'}
 firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
+windows_install_timeout=${windows_install_timeout:=8}
 
 #######################################
 #       Source helper functions
@@ -185,7 +186,7 @@ fi
 echo "--------------------------------------------------------"
 echo "Power on VM and begin install windows"
 echo "--------------------------------------------------------"
-if ! powerOnVM "${baseVMIPath}"; then
+if ! powerOnVM "${baseVMIPath}" 0 1; then
 	writeErr "powering on VM"
 	exit 1
 else
@@ -196,11 +197,17 @@ echo "--------------------------------------------------------"
 echo "Wait for windows install to complete"
 echo "--------------------------------------------------------"
 
+start_time=$(date +%s)
 echo -ne "|"
 while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
 	echo -ne "."
-	sleep 2m
-	#TODO: add timeout so job doesn't run endlessly#
+
+	if [[ $(($(date +%s) - start_time)) -gt ${windows_install_timeout} ]]; then
+		writeErr "Timeout trying to install windows"
+		exit 1
+	fi
+
+	sleep 1m
 done
 
 echo "|"

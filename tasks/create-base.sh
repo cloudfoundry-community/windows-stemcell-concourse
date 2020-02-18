@@ -48,7 +48,7 @@ vm_net_adapter=${vm_net_adapter:='e1000e'}
 firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
-windows_install_timeout=${windows_install_timeout:=8}
+windows_install_timeout_minutes=${windows_install_timeout_minutes:=8}
 
 #######################################
 #       Source helper functions
@@ -197,18 +197,14 @@ echo "--------------------------------------------------------"
 echo "Wait for windows install to complete"
 echo "--------------------------------------------------------"
 
-start_time=$(date +%s)
 echo -ne "|"
-while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
-	echo -ne "."
 
-	if [[ $(($(date +%s) - start_time)) -gt ${windows_install_timeout} ]]; then
-		writeErr "Timeout trying to install windows"
-		exit 1
-	fi
-
-	sleep 1m
-done
+timeout ${windows_install_timeout_minutes}m bash <<EOT
+	while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
+		echo -ne "."
+		sleep 1m
+	done
+EOT
 
 echo "|"
 echo "Done"

@@ -395,7 +395,6 @@ function powerOffVM() {
 function shutdownVM() {
 	local vm_ipath="${1}"
 	local timeout_seconds=${2:30}
-	local start_time=$(date +%s)
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true 2>&1); then
 		writeErr "Could not shutdown VM at ${vm_ipath}, ${ret}"
@@ -421,7 +420,6 @@ function waitForToolStatus(){
 	local vm_ipath="${1}"
 	local desired_status="${2:"${toolsOk}"}" #toolsNotRunning
 	local timeout_seconds="${3:30}"
-	local start_time=$(date +%s)
 
 	echo ""
 
@@ -430,6 +428,7 @@ function waitForToolStatus(){
 		return 1
 	fi
 
+timeout ${timeout_seconds}s bash <<EOT
 	while read status; do
 		echo "Tool status: ${desired_status}"
 		if [[ ${status} == "${desired_status}" ]]; then
@@ -441,14 +440,10 @@ function waitForToolStatus(){
 			return 1
 		fi
 
-		if [[ $(($(date +%s) - start_time)) -gt ${timeout_seconds} ]]; then
-			writeErr "Timeout trying to get tool status"
-			return 1
-		fi
-
 		printf "-"
 		sleep 5
-	done <<< ${toolStatus}
+	done <<< $(getToolsStatus "${vm_ipath}")
+EOT
 
 	echo ""
 

@@ -199,17 +199,21 @@ echo "--------------------------------------------------------"
 
 echo -ne "|"
 
+set +e #turn "exit on error" off so we can catch the timeout
+
 timeout ${windows_install_timeout_minutes}m bash <<EOT
 	while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
 		echo -ne "."
 		sleep 1m
 	done
-EOT || true
+EOT
 
 if [[ $? == 124 ]]; then
 	writeErr "Timed out waiting for windows to install"
 	exit 1
 fi
+
+set -e
 
 echo "|"
 echo "Done"

@@ -428,9 +428,11 @@ function waitForToolStatus(){
 		return 1
 	fi
 
+	set +e #turn "exit on error" off so we can catch the timeout	
+
 timeout ${timeout_seconds}s bash <<EOT
 	while read status; do
-		echo "Tool status: ${desired_status}"
+		#echo "Tool status: ${status}"
 		if [[ ${status} == "${desired_status}" ]]; then
 			break
 		fi
@@ -449,6 +451,8 @@ EOT
 		writeErr "Timed out waiting for tool status"
 		return 1
 	fi
+
+	set -e
 
 	echo ""
 

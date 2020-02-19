@@ -24,7 +24,7 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-timeout_seconds=${timeout_seconds:=30}
+timeout=${timeout:=30m}
 
 #######################################
 #       Source helper functions
@@ -56,7 +56,7 @@ if ! exists=$(vmExists "${baseVMIPath}"); then
 	exit 1
 fi
 
-[[ ${exists} == "false" ]] && (
+[[ ${exists} == *"false"* ]] && (
 	writeErr "no base VM found at path ${baseVMIPath}"
 	exit 1
 )
@@ -68,8 +68,8 @@ fi
 
 echo "Powered state: $powerState"
 
-if [[ ! ${powerState} == "poweredOn" ]]; then
-	if ! powerOnVM "${baseVMIPath}" ${timeout_seconds}; then
+if [[ ! ${powerState} == *"poweredOn"* ]]; then
+	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
 		writeErr "powering on VM ${base_vm_name}"
 		exit 1
 	fi
@@ -83,7 +83,7 @@ echo "--------------------------------------------------------"
 
 for ((i = 1; i <= 3; i++)); do
 	echo "    starting ${i}"
-	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"  2>&1); then
+	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot" 2>&1); then
 		echo "${exitCode}" #write the error echo'd back
 		writeErr "could not run windows update"
 		exit 1
@@ -94,13 +94,13 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	if ! shutdownVM "${baseVMIPath}" ${timeout_seconds}; then
-		writeErr "could not shutdown VM"
+	if ! shutdownVM "${baseVMIPath}" ${timeout}; then
+		writeErr "could not shutdown VM at path ${baseVMIPath}"
 		exit 1
 	fi
 
-	if ! powerOnVM "${baseVMIPath}" ${timeout_seconds}; then
-		writeErr "${ret}"
+	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
+		writeErr "could not power on VM at path ${baseVMIPath}"
 		exit 1
 	fi
 
@@ -110,8 +110,8 @@ done
 echo "--------------------------------------------------------"
 echo "Updates done, shutting down"
 echo "--------------------------------------------------------"
-if ! shutdownVM "${baseVMIPath}" ${timeout_seconds}; then
-	writeErr "could not shutdown vm"
+if ! shutdownVM "${baseVMIPath}" ${timeout}; then
+	writeErr "could not shutdown vm at path ${baseVMIPath}"
 	exit 1
 fi
 

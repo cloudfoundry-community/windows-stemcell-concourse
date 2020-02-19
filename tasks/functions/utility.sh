@@ -98,3 +98,6 @@ function retryop()
 
 	return 0
 }
+
+#for running subshell commands within timeout function
+typeset -fx writeErr

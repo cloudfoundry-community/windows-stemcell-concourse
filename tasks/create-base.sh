@@ -206,7 +206,8 @@ echo -ne "|"
 
 set +e #turn "exit on error" off so we can catch the timeout
 
-timeout --foreground ${windows_install_timeout} bash -c 'while read status ; do if [[ ${status} == *"poweredOff"* ]]; then break; else echo -ne ".";sleep 1m; fi; done <<< ${powerState}'
+#while the VM will reboot during windows install, vsphere will not change its powerstate to poweredOff until it's actually powered off
+timeout --foreground ${windows_install_timeout} bash -c 'while [[ $(getPowerState "'${baseVMIPath}'") == "poweredOn" ]] ; do echo -ne "."; sleep 1m; done'
 
 if [[ $? == 124 ]]; then
 	echo ""
@@ -217,6 +218,28 @@ fi
 set -e
 
 echo "|"
+
+echo "Done"
+
+echo "--------------------------------------------------------"
+echo "Validating vmware tools"
+echo "--------------------------------------------------------"
+
+if ! toolStatus=$(getToolsStatus "${baseVMIPath}"); then
+	writeErr "Could not get tool status for VM at path ${baseVMIPath}"
+	exit 1
+fi
+
+if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
+	writeErr "VMware tools are not insalled on VM at path ${baseVMIPath}"
+	exit 1
+fi
+
+if [[ ${toolStatus} == "toolsOld" ]]; then
+	writeErr "Update VMware tools version on VM at path ${baseVMIPath} before continuing"
+	exit 1
+fi
+
 echo "Done"
 
 echo "--------------------------------------------------------"

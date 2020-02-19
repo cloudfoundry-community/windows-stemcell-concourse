@@ -436,21 +436,27 @@ function waitForToolStatus(){
 		return 1
 	fi
 
-	if [[ ${toolStatus} == "toolsOld" ]]; then
-		writeErr "Update VMware tools versio on VM at path ${vm_ipath} before contimuing"
-		return 1
-	fi
+	# if [[ ${toolStatus} == "toolsOld" ]]; then
+	# 	writeErr "Update VMware tools versio on VM at path ${vm_ipath} before contimuing"
+	# 	return 1
+	# fi
 	
-	if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
-		writeErr "VMware tools are not insalled on VM at path ${vm_ipath}"
-		return 1
-	fi
+	# if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
+	# 	writeErr "VMware tools are not insalled on VM at path ${vm_ipath}"
+	# 	return 1
+	# fi
 
 	echo -ne "|"
 
 	set +e #turn "exit on error" off so we can catch the timeout
 	
-	timeout --foreground ${timeout} bash -c 'while [[ $(getToolsStatus "'${vm_ipath}'") != *"'${desired_status}'"* ]]; do echo -ne "."; sleep '${sleep_time}'; done'
+	timeout --foreground ${timeout} bash -c 'while [[ $(getToolsStatus "'${vm_ipath}'") != *"'${desired_status}'"* ]]; do if [[ $(getToolsStatus "'${vm_ipath}'") =~ ^(toolsNotInstalled|toolsOld)$ ]]; then exit 11; fi; echo -ne "."; sleep '${sleep_time}'; done'
+
+	if [[ $? == 11 ]]; then
+		echo ""
+		writeErr "Vmware tools are either not installed or running an old version"
+		return 1
+	fi
 
 	if [[ $? == 124 ]]; then
 		echo ""

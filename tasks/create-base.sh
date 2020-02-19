@@ -48,7 +48,7 @@ vm_net_adapter=${vm_net_adapter:='e1000e'}
 firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
-windows_install_timeout=${windows_install_timeout:=15s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
+windows_install_timeout=${windows_install_timeout:=10m} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
 
 #######################################
 #       Source helper functions

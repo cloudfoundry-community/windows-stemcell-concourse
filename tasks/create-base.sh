@@ -230,13 +230,18 @@ if ! toolStatus=$(getToolsStatus "${baseVMIPath}"); then
 	exit 1
 fi
 
-if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
-	writeErr "VMware tools are not insalled on VM at path ${baseVMIPath}"
-	exit 1
-fi
+if [[ ${toolStatus} != *"toolsOk"* ]]; then
+	if [[ ${toolStatus} == *"toolsNotInstalled"* ]]; then
+		writeErr "VMware tools are not insalled on VM at path ${baseVMIPath}"
+		exit 1
+	fi
 
-if [[ ${toolStatus} == "toolsOld" ]]; then
-	writeErr "Update VMware tools version on VM at path ${baseVMIPath} before continuing"
+	if [[ ${toolStatus} == *"toolsOld"* ]]; then
+		writeErr "Update VMware tools version on VM at path ${baseVMIPath} before continuing"
+		exit 1
+	fi
+
+	writeErr "VMware tools status is being reported in a bad state, but no other details are available. Find the VM in vCenter to further diagnose."
 	exit 1
 fi
 

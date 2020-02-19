@@ -198,12 +198,18 @@ echo "Wait for windows install to complete"
 echo "--------------------------------------------------------"
 
 echo -ne "|"
+while read status ; do if [[ ${status} == *"poweredOn"* ]]; then break; else echo -ne ".";sleep 1m; fi; done <<< $(getPowerState "${baseVMIPath}")
+
+while read status; do echo ${status}; done <<< echo "poweredOn"
+
+timeout 3 bash -c 'while read status ; do if [[ ${status} == *"poweredOn"* ]]; then break; else echo -ne ".";sleep 1m; fi; done < $(getPowerState "${baseVMIPath}")'
+
 
 set +e #turn "exit on error" off so we can catch the timeout
 
 timeout --foreground ${windows_install_timeout_minutes}m bash <<EOT
 	while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
-		echo -ne "."
+		echo -ne "."bla
 		sleep 1m
 	done
 EOT

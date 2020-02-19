@@ -207,7 +207,7 @@ echo -ne "|"
 set +e #turn "exit on error" off so we can catch the timeout
 
 #while the VM will reboot during windows install, vsphere will not change its powerstate to poweredOff until it's actually powered off
-timeout --foreground ${windows_install_timeout} bash -c 'while [[ $(getPowerState "'${baseVMIPath}'") == "poweredOn" ]] ; do echo -ne "."; sleep 1m; done'
+timeout --foreground ${windows_install_timeout} bash -c 'while [[ $(getPowerState "'${baseVMIPath}'") == *"poweredOn"* ]] ; do echo -ne "."; sleep 1m; done'
 
 if [[ $? == 124 ]]; then
 	echo ""

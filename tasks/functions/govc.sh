@@ -450,7 +450,7 @@ function waitForToolStatus(){
 
 	set +e #turn "exit on error" off so we can catch the timeout
 	
-	timeout --foreground ${timeout} bash -c 'while [[ $(getToolsStatus "'${vm_ipath}'") != "'${desired_status}'" ]]; do echo -ne "."; sleep '${sleep_time}'; done'
+	timeout --foreground ${timeout} bash -c 'while [[ $(getToolsStatus "'${vm_ipath}'") != *"'${desired_status}'"* ]]; do echo -ne "."; sleep '${sleep_time}'; done'
 
 	if [[ $? == 124 ]]; then
 		echo ""

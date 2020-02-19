@@ -198,16 +198,19 @@ echo "Wait for windows install to complete"
 echo "--------------------------------------------------------"
 
 echo -ne "|"
+
+#source pipeline-resources/tasks/functions/govc.sh
+#initializeGovc "vcsa-01.haas-217.pez.pivotal.io" "administrator@vsphere.local" "HRZ3kG3E961FjbHDnr!"
+#baseVMIPath=/Datacenter/vm/Stemcell/Win-Stemcell-Base
+#govc about
+
 #while read status ; do if [[ ${status} == *"poweredOn"* ]]; then break; else echo -ne ".";sleep 1m; fi; done <<< $(getPowerState "${baseVMIPath}")
 
 #while read status; do echo ${status}; done <<< echo "poweredOn"
 
-
-
-
 set +e #turn "exit on error" off so we can catch the timeout
 
-timeout --foreground ${windows_install_timeout_minutes}m bash -c "while read status ; do if [[ ${status} == *"poweredOn"* ]]; then break; else echo -ne ".";sleep 1m; fi; done < $(getPowerState "${baseVMIPath}")"
+timeout --foreground 5s bash -c 'while read status ; do if [[ ${status} == *"poweredOff"* ]]; then break; else echo -ne ".";sleep 1m; fi; done <<< $(getPowerState "${baseVMIPath}")'
 
 #timeout --foreground ${windows_install_timeout_minutes}m bash <<EOT
 #	while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do

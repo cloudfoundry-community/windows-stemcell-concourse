@@ -48,7 +48,7 @@ vm_net_adapter=${vm_net_adapter:='e1000e'}
 firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
-windows_install_timeout_minutes=${windows_install_timeout_minutes:=15}
+windows_install_timeout=${windows_install_timeout:=15s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
 
 #######################################
 #       Source helper functions
@@ -206,7 +206,7 @@ echo -ne "|"
 
 set +e #turn "exit on error" off so we can catch the timeout
 
-timeout --foreground ${windows_install_timeout_minutes}m bash -c 'while read status ; do if [[ ${status} == *"poweredOff"* ]]; then break; else echo -ne ".";sleep 1m; fi; done <<< ${powerState}'
+timeout --foreground ${windows_install_timeout} bash -c 'while read status ; do if [[ ${status} == *"poweredOff"* ]]; then break; else echo -ne ".";sleep 1m; fi; done <<< ${powerState}'
 
 if [[ $? == 124 ]]; then
 	echo ""

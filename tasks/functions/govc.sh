@@ -74,6 +74,7 @@ function initializeGovc() {
 	typeset -fx getInfo
 	typeset -fx getPowerState
 	typeset -fx getToolsStatus
+	typeset -fx getToolsVersionStatus
 
 	return 0
 }
@@ -329,6 +330,33 @@ function getToolsStatus() {
 # Description:
 #
 # Arguments:
+# | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2'
+#######################################
+function getToolsVersionStatus() {
+	local vm_ipath="${1}"
+
+	if ! info=$(getInfo "${vm_ipath}"); then
+		echo "${info}"
+		return 1
+	fi # 2>&1
+
+	if ! toolsVersionStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2'); then
+		writeErr "Could not parse vm info at ${vm_ipath}"
+		return 1
+	elif [[ -z "${toolsVersionStatus}" ]]; then
+		writeErr "Tools state could not be parsed for VM at ${vm_ipath}"
+		return 1
+	fi
+
+	echo "${toolsVersionStatus}"
+	return 0
+}
+
+
+######################################
+# Description:
+#
+# Arguments:
 #
 #######################################
 function restartVM() {
@@ -437,15 +465,10 @@ function waitForToolStatus(){
 		return 1
 	fi
 
-	# if [[ ${toolStatus} == "toolsOld" ]]; then
-	# 	writeErr "Update VMware tools versio on VM at path ${vm_ipath} before contimuing"
-	# 	return 1
-	# fi
-	
-	# if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
-	# 	writeErr "VMware tools are not insalled on VM at path ${vm_ipath}"
-	# 	return 1
-	# fi
+	if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
+		writeErr "VMware tools are not insalled on VM at path ${vm_ipath}"
+		return 1
+	fi
 
 	echo -ne "|"
 

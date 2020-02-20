@@ -251,19 +251,28 @@ if ! toolStatus=$(getToolsStatus "${baseVMIPath}"); then
 	exit 1
 fi
 
+echo "Current tools status: ${toolStatus}"
+
 if [[ ${toolStatus} != *"toolsOk"* ]]; then
 	if [[ ${toolStatus} == *"toolsNotInstalled"* ]]; then
-		writeErr "VMware tools are not insalled on VM at path ${baseVMIPath}"
+		writeErr "VMware tools are not installed on VM at path ${baseVMIPath}. If the VM has no public access to download tools, use the vmware-tools-uri var to provide an internal place to download from."
 		exit 1
 	fi
 
-	if [[ ${toolStatus} == *"toolsOld"* ]]; then
-		writeErr "Update VMware tools version on VM at path ${baseVMIPath} before continuing"
+	if ! toolVersionStatus=$(getToolsVersionStatus "${baseVMIPath}"); then
+		writeErr "Could not get tool version status for VM at path ${baseVMIPath}"
 		exit 1
 	fi
 
-	writeErr "VMware tools status is being reported in a bad state, but no other details are available. Find the VM in vCenter to further diagnose."
-	exit 1
+	echo "Current tools version status: ${toolVersionStatus}"
+
+	$if [[ (${toolStatus} == *"toolsOld"*) && (${toolVersionStatus} == *"guestToolsSupportedOld"*) ]]; then
+		writeErr "Tools are installed but running an old version. Use the vmware-tools-uri var to provide up to date tools install and re-run this task."
+		exit 1
+	else
+		writeErr "VMware tools status is being reported in a bad state, but no other details are available. Verify the version installed is compatible with the ESXi host it is on, in vCenter."
+		exit 1
+	fi
 fi
 
 echo "Done"

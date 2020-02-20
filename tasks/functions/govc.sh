@@ -372,7 +372,7 @@ function connectDevice() {
 #######################################
 function powerOffVM() {
 	local vm_ipath="${1}"
-	local timeout=${2:30s}
+	local timeout=${2:-30s}
 	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true 2>&1); then

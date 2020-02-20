@@ -29,7 +29,7 @@ vm_network=${vm_network:='VM Network'}
 vm_cpu=${vm_cpu:=4}
 vm_memory_mb=${vm_memory_mb:=8000}
 vm_resource_pool=${vm_resource_pool:=''}
-timeout_seconds=${timeout_seconds:=30}
+timeout=${timeout:=30s}
 
 #######################################
 #       Source helper functions
@@ -78,7 +78,7 @@ if [[ ! ${powerState} == "poweredOff" ]]; then
 	echo "Powering off base VM"
 	echo "--------------------------------------------------------"
 
-	if ! powerOffVM "${baseVMIPath}" ${timeout_seconds}; then
+	if ! powerOffVM "${baseVMIPath}" ${timeout}; then
 		writeErr "powering on VM ${baseVMIPath}"
 		exit 1
 	fi

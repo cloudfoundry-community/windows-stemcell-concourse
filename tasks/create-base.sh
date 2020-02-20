@@ -223,6 +223,26 @@ echo "|"
 echo "Done"
 
 echo "--------------------------------------------------------"
+echo "Eject cdrom"
+echo "--------------------------------------------------------"
+if ! ejectCDRom "${baseVMIPath}"; then
+	writeErr "ejecting cdrom"
+	exit 1
+else
+	echo "Done"
+fi
+
+echo "--------------------------------------------------------"
+echo "Remove floppy drive"
+echo "--------------------------------------------------------"
+if ! ejectAndRemoveFloppyDrive "${baseVMIPath}"; then
+	writeErr "removing floppy drive"
+	exit 1
+else
+	echo "Done"
+fi
+
+echo "--------------------------------------------------------"
 echo "Validating vmware tools"
 echo "--------------------------------------------------------"
 
@@ -247,26 +267,6 @@ if [[ ${toolStatus} != *"toolsOk"* ]]; then
 fi
 
 echo "Done"
-
-echo "--------------------------------------------------------"
-echo "Eject cdrom"
-echo "--------------------------------------------------------"
-if ! ejectCDRom "${baseVMIPath}"; then
-	writeErr "ejecting cdrom"
-	exit 1
-else
-	echo "Done"
-fi
-
-echo "--------------------------------------------------------"
-echo "Remove floppy drive"
-echo "--------------------------------------------------------"
-if ! ejectAndRemoveFloppyDrive "${baseVMIPath}"; then
-	writeErr "removing floppy drive"
-	exit 1
-else
-	echo "Done"
-fi
 
 #######################################
 #       Return result

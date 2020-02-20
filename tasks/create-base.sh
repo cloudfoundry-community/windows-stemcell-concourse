@@ -253,20 +253,20 @@ fi
 
 echo "Current tools status: ${toolStatus}"
 
-if [[ ${toolStatus} != *"toolsOk"* ]]; then
+if ! toolVersionStatus=$(getToolsVersionStatus "${baseVMIPath}"); then
+	writeErr "Could not get tool version status for VM at path ${baseVMIPath}"
+	exit 1
+fi
+
+echo "Current tools version status: ${toolVersionStatus}"
+
+if [[ ${toolStatus} != *"toolsNotRunning"* ]]; then #because sysprep shut the VM off
 	if [[ ${toolStatus} == *"toolsNotInstalled"* ]]; then
 		writeErr "VMware tools are not installed on VM at path ${baseVMIPath}. If the VM has no public access to download tools, use the vmware-tools-uri var to provide an internal place to download from."
 		exit 1
 	fi
 
-	if ! toolVersionStatus=$(getToolsVersionStatus "${baseVMIPath}"); then
-		writeErr "Could not get tool version status for VM at path ${baseVMIPath}"
-		exit 1
-	fi
-
-	echo "Current tools version status: ${toolVersionStatus}"
-
-	$if [[ (${toolStatus} == *"toolsOld"*) && (${toolVersionStatus} == *"guestToolsSupportedOld"*) ]]; then
+	if [[ ${toolVersionStatus} == *"guestToolsSupportedOld"* ]]; then
 		writeErr "Tools are installed but running an old version. Use the vmware-tools-uri var to provide up to date tools install and re-run this task."
 		exit 1
 	else

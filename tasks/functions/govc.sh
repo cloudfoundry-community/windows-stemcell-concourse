@@ -30,7 +30,7 @@ function initializeGovc() {
 	local vcenter_username="${2}"
 	local vcenter_password="${3}"
 	local vcenter_ca_certs="${4}"
-	local govc_file_path="${5}"
+	local vcenter_datacenter="${5}"
 
 	echo "Initializing govc"
 
@@ -38,6 +38,7 @@ function initializeGovc() {
 	export GOVC_URL="${vcenter_host}"
 	export GOVC_USERNAME="${vcenter_username}"
 	export GOVC_PASSWORD="${vcenter_password}"
+	export GOVC_DATACENTER="${vcenter_datacenter}"
 
 	if [[ -n "${vcenter_ca_certs}" ]]; then
 		GOVC_TLS_CA_CERTS=$(mktemp)
@@ -100,7 +101,7 @@ function powershellCmd() {
 		return 1
 	fi
 
-	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath=${vm_ipath} -l="${vm_username}:${vm_password}" -p=${pid} -X=true -x -json 2>&1); then
+	if ! processInfo=$(${GOVC_EXE} guest.ps -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" -p=${pid} -X=true -x -json 2>&1); then
 		echo "${processInfo}"
 		writeErr "could not get powershell process ${pid} info on VM at ${vm_ipath}"
 		return 1
@@ -157,7 +158,7 @@ function mkdir() {
 	local vm_password="${3}"
 	local folder_Path="${4}"
 
-	if ! ${GOVC_EXE} guest.mkdir -vm.ipath=${vm_ipath} -l=${vm_username}:${vm_password} "${folder_Path}"; then
+	if ! ${GOVC_EXE} guest.mkdir -vm.ipath="${vm_ipath}" -l=${vm_username}:${vm_password} "${folder_Path}"; then
 		writeErr "Could not make dir on VM at ${vm_ipath}"
 		return 1
 	fi
@@ -214,7 +215,7 @@ function resizeDisk() {
 	local vm_ipath="${1}"
 	local disk_size_gb="${2}"
 
-	if ! ${GOVC_EXE} vm.disk.change -vm.ipath=${vm_ipath} -size=${disk_size_gb}; then
+	if ! ${GOVC_EXE} vm.disk.change -vm.ipath="${vm_ipath}" -size=${disk_size_gb}; then
 		writeErr "Could not resize VM disk at ${vm_ipath}"
 		return 1
 	fi
@@ -277,7 +278,7 @@ function powerOnVM() {
 	local timeout=${2:-30s}
 	local skip_toolstatus=${3:-0}
 
-	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true); then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -on=true -wait=true); then
 		if [[ "${ret}" == *"current state (Powered on)"* ]]; then
 			return 0
 		else
@@ -334,7 +335,7 @@ function restartVM() {
 	local vm_ipath="${1}"
 	local timeout=${2:-30s}
 
-	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -r=true -wait=true 2>&1); then
 		writeErr "Could not restart VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
@@ -356,7 +357,7 @@ function connectDevice() {
 	local vm_ipath="${1}"
 	local device_name="${2}"
 
-	if ! ${GOVC_EXE} device.connect -vm.ipath=${vm_ipath} ${device_name}; then
+	if ! ${GOVC_EXE} device.connect -vm.ipath="${vm_ipath}" ${device_name}; then
 		writeErr "Could not connect device to VM at ${vm_ipath}"
 		return 1
 	fi
@@ -375,7 +376,7 @@ function powerOffVM() {
 	local timeout=${2:-30s}
 	local skip_toolstatus=${3:-0}
 
-	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -off=true -wait=true 2>&1); then
 		writeErr "Could not power off VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
@@ -397,13 +398,13 @@ function powerOffVM() {
 # Description:
 #
 # Arguments:
-#
+#``````
 #######################################
 function shutdownVM() {
 	local vm_ipath="${1}"
 	local timeout=${2:-30s}
 
-	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -s=true -wait=true 2>&1); then
 		writeErr "Could not shutdown VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
@@ -607,7 +608,7 @@ function uploadToDatastore() {
 function destroyVM() {
 	local vm_ipath="${1}"
 
-	if ! ret=$(${GOVC_EXE} vm.destroy -vm.ipath=${vm_ipath} 2>&1); then
+	if ! ret=$(${GOVC_EXE} vm.destroy -vm.ipath="${vm_ipath}" 2>&1); then
 		if [[ "${ret}" == *"no such VM"* ]]; then
 			return 0
 		else
@@ -723,7 +724,7 @@ function createVMwithISO() {
 function setBootOrder() {
 	local vm_ipath="${1}"
 
-	if ! ${GOVC_EXE} device.boot -order=cdrom,disk -vm.ipath=${vm_ipath}; then
+	if ! ${GOVC_EXE} device.boot -order=cdrom,disk -vm.ipath="${vm_ipath}"; then
 		writeErr "Could not set boot order at ${vm_ipath}"
 		return 1
 	fi
@@ -740,7 +741,7 @@ function setBootOrder() {
 function ejectCDRom() {
 	local vm_ipath="${1}"
 
-	if ! ${GOVC_EXE} device.cdrom.eject -vm.ipath=${vm_ipath}; then
+	if ! ${GOVC_EXE} device.cdrom.eject -vm.ipath="${vm_ipath}"; then
 		writeErr "Could not eject CD at ${vm_ipath}"
 		return 1
 	fi
@@ -757,14 +758,14 @@ function ejectCDRom() {
 function ejectAndRemoveFloppyDrive() {
 	local vm_ipath="${1}"
 
-	id="$(${GOVC_EXE} device.ls -vm.ipath=${vm_ipath} | grep -o '^floppy-[0-9]*')"
+	id="$(${GOVC_EXE} device.ls -vm.ipath="${vm_ipath}" | grep -o '^floppy-[0-9]*')"
 
-	if ! ${GOVC_EXE} device.floppy.eject -vm.ipath=${vm_ipath} -device ${id}; then
+	if ! ${GOVC_EXE} device.floppy.eject -vm.ipath="${vm_ipath}" -device ${id}; then
 		writeErr "Could not eject floppy at ${vm_ipath}"
 		return 1
 	fi
 
-	if ! ${GOVC_EXE} device.remove -vm.ipath=${vm_ipath} ${id}; then
+	if ! ${GOVC_EXE} device.remove -vm.ipath="${vm_ipath}" ${id}; then
 		writeErr "Could not remove floppy at ${vm_ipath}"
 		return 1
 	fi

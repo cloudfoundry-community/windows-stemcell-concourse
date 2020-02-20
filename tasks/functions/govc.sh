@@ -4,6 +4,8 @@
 # Task Description:
 #   Functions to interact with govc cli
 
+toolsOk="toolsOk"
+toolsNotRunning="toolsNotRunning"
 
 ######################################
 # Description: Initialize GOVC_* environment variables used by the govc binary.
@@ -66,6 +68,13 @@ function initializeGovc() {
 		writeErr "${ret}"
 		return 1;
 	fi
+
+	#for running subshell commands within timeout function
+	typeset -fx getInfo
+	typeset -fx getPowerState
+	typeset -fx getToolsStatus
+
+	return 0
 }
 
 ######################################
@@ -265,6 +274,8 @@ function getPowerState() {
 #######################################
 function powerOnVM() {
 	local vm_ipath="${1}"
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -on=true -wait=true); then
 		if [[ "${ret}" == *"current state (Powered on)"* ]]; then
@@ -275,7 +286,14 @@ function powerOnVM() {
 		fi
 	fi
 
-	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
+	if [[ ${skip_toolstatus} -eq 1 ]]; then
+		return 0
+	fi
+
+	if ! waitForToolStatus "${vm_ipath}" "${toolsOk}" ${timeout} ; then
+		return 1
+	fi
+
 	return 0
 }
 
@@ -312,44 +330,19 @@ function getToolsStatus() {
 # Arguments:
 #
 #######################################
-function retryop()
-{
-  retry=0
-  max_retries=$2
-  interval=$3
-  while [ ${retry} -lt ${max_retries} ]; do
-    echo "Operation: $1, Retry #${retry}"
-    eval $1
-    if [ $? -eq 0 ]; then
-      echo "Successful"
-      break
-    else
-      let retry=retry+1
-      echo "Sleep $interval seconds, then retry..."
-      sleep $interval
-    fi
-  done
-  if [ ${retry} -eq ${max_retries} ]; then
-    echo "Operation failed: $1"
-    exit 1
-  fi
-}
-
-######################################
-# Description:
-#
-# Arguments:
-#
-#######################################
 function restartVM() {
 	local vm_ipath="${1}"
+	local timeout=${2:-30s}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -r=true -wait=true 2>&1); then
 		writeErr "Could not restart VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
-	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
+	if ! waitForToolStatus "${vm_ipath}" "${toolsOk}" ${timeout}; then
+		return 1
+	fi
+
 	return 0
 }
 
@@ -379,13 +372,24 @@ function connectDevice() {
 #######################################
 function powerOffVM() {
 	local vm_ipath="${1}"
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -off=true -wait=true 2>&1); then
 		writeErr "Could not power off VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
-	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
+	if [[ ${skip_toolstatus} -eq 1 ]]; then
+		return 0
+	fi
+
+	if ! waitForToolStatus "${vm_ipath}" "${toolsNotRunning}" ${timeout}; then
+		return 1
+	fi
+	
+	sleep 10 #There is a brief time between when the tools process is terminated and the VM is actually powered off
+
 	return 0
 }
 
@@ -397,15 +401,82 @@ function powerOffVM() {
 #######################################
 function shutdownVM() {
 	local vm_ipath="${1}"
+	local timeout=${2:-30s}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath=${vm_ipath} -s=true -wait=true 2>&1); then
 		writeErr "Could not shutdown VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
-	sleep 35s #this is so vsphere can keep up with the executing script on slow vsphere connections
+	if ! waitForToolStatus "${vm_ipath}" "${toolsNotRunning}" ${timeout}; then
+		return 1
+	fi
+
+	sleep 10 #There is a brief time between when the tools process is terminated and the VM is actually powered off
+
 	return 0
 }
+
+######################################
+# Description:
+#
+# Arguments:
+#
+#######################################
+function waitForToolStatus(){
+	local vm_ipath="${1}"
+	local desired_status="${2:-"${toolsOk}"}" #toolsNotRunning
+	local timeout=${3:-30s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
+	local sleep_time=${4:-5s}
+
+	echo "Waiting for a tool status of ${desired_status}"
+
+	if ! toolStatus=$(getToolsStatus "${vm_ipath}"); then
+		writeErr "Could not get tool status for VM at path ${vm_ipath}"
+		return 1
+	fi
+
+	# if [[ ${toolStatus} == "toolsOld" ]]; then
+	# 	writeErr "Update VMware tools versio on VM at path ${vm_ipath} before contimuing"
+	# 	return 1
+	# fi
+	
+	# if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
+	# 	writeErr "VMware tools are not insalled on VM at path ${vm_ipath}"
+	# 	return 1
+	# fi
+
+	echo -ne "|"
+
+	set +e #turn "exit on error" off so we can catch the timeout
+	
+	timeout --foreground ${timeout} bash -c 'while [[ $(getToolsStatus "'${vm_ipath}'") != *"'${desired_status}'"* ]]; do if [[ $(getToolsStatus "'${vm_ipath}'") == *"toolsOld"* ]]; then exit 11; fi; if [[ $(getToolsStatus "'${vm_ipath}'") == *"toolsNotInstalled"* ]]; then exit 12; fi; echo -ne "."; sleep '${sleep_time}'; done'
+
+	if [[ $? == 11 ]]; then
+		echo ""
+		writeErr "Vmware tools are running an old version, please update to continue."
+		return 1
+	fi
+	
+	if [[ $? == 12 ]]; then
+		echo ""
+		writeErr "Vmware tools are not installed, please install to to continue."
+		return 1
+	fi
+
+	if [[ $? == 124 ]]; then
+		echo ""
+		writeErr "Timed out waiting for tool status"
+		return 1
+	fi
+
+	set -e
+
+	echo "|"
+
+	return 0
+}
+
 ######################################
 # Description:
 #
@@ -466,14 +537,16 @@ function vmExists() {
 #######################################
 function validateAndPowerOn() {
 	local vm_ipath="${1}"
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! powerState=$(getPowerState ${vm_ipath}); then
 		echo "${powerState}"
 		return 1
 	fi
 
-	if [[ "${powerState}" == *"poweredOff"* ]]; then
-		if ! powerOnVM ${vm_ipath}; then return 1; fi
+	if [[ ! ${powerState} == "poweredOn" ]]; then
+		if ! powerOnVM "${vm_ipath}" ${timeout} ${skip_toolstatus}; then return 1; fi
 	fi
 
 	return 0
@@ -487,6 +560,7 @@ function validateAndPowerOn() {
 #######################################
 function validateAndPowerOff() {
 	local vm_ipath="${1}"
+	local timeout=${2:-30s}
 
 	if ! powerState=$(getPowerState ${vm_ipath}); then
 		echo "${powerState}"
@@ -494,7 +568,7 @@ function validateAndPowerOff() {
 	fi
 
 	if [[ "${powerState}" == *"poweredOn"* ]]; then
-		if ! powerOffVM ${vm_ipath}; then return 1; fi
+		if ! powerOffVM "${vm_ipath}" ${timeout}; then return 1; fi
 	fi
 
 	return 0

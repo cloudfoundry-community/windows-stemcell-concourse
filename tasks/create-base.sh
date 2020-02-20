@@ -48,6 +48,7 @@ vm_net_adapter=${vm_net_adapter:='e1000e'}
 firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
+windows_install_timeout=${windows_install_timeout:=10m} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
 
 #######################################
 #       Source helper functions
@@ -185,7 +186,7 @@ fi
 echo "--------------------------------------------------------"
 echo "Power on VM and begin install windows"
 echo "--------------------------------------------------------"
-if ! powerOnVM "${baseVMIPath}"; then
+if ! powerOnVM "${baseVMIPath}" 0 1; then
 	writeErr "powering on VM"
 	exit 1
 else
@@ -196,14 +197,54 @@ echo "--------------------------------------------------------"
 echo "Wait for windows install to complete"
 echo "--------------------------------------------------------"
 
+if ! powerState=$(getPowerState "${baseVMIPath}"); then
+	writeErr "Could not get power state VM at path ${vm_ipath}"
+	exit 1
+fi
+
 echo -ne "|"
-while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]; do
-	echo -ne "."
-	sleep 2m
-	#TODO: add timeout so job doesn't run endlessly#
-done
+
+set +e #turn "exit on error" off so we can catch the timeout
+
+#while the VM will reboot during windows install, vsphere will not change its powerstate to poweredOff until it's actually powered off
+timeout --foreground ${windows_install_timeout} bash -c 'while [[ $(getPowerState "'${baseVMIPath}'") == *"poweredOn"* ]] ; do echo -ne "."; sleep 1m; done'
+
+if [[ $? == 124 ]]; then
+	echo ""
+	writeErr "Timed out waiting for windows to install"
+	exit 1
+fi
+
+set -e
 
 echo "|"
+
+echo "Done"
+
+echo "--------------------------------------------------------"
+echo "Validating vmware tools"
+echo "--------------------------------------------------------"
+
+if ! toolStatus=$(getToolsStatus "${baseVMIPath}"); then
+	writeErr "Could not get tool status for VM at path ${baseVMIPath}"
+	exit 1
+fi
+
+if [[ ${toolStatus} != *"toolsOk"* ]]; then
+	if [[ ${toolStatus} == *"toolsNotInstalled"* ]]; then
+		writeErr "VMware tools are not insalled on VM at path ${baseVMIPath}"
+		exit 1
+	fi
+
+	if [[ ${toolStatus} == *"toolsOld"* ]]; then
+		writeErr "Update VMware tools version on VM at path ${baseVMIPath} before continuing"
+		exit 1
+	fi
+
+	writeErr "VMware tools status is being reported in a bad state, but no other details are available. Find the VM in vCenter to further diagnose."
+	exit 1
+fi
+
 echo "Done"
 
 echo "--------------------------------------------------------"

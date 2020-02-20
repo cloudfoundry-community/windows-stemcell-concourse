@@ -24,6 +24,7 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
+timeout_seconds=${timeout_seconds:=30}
 
 #######################################
 #       Source helper functions
@@ -89,34 +90,10 @@ echo "Done"
 echo "--------------------------------------------------------"
 echo "Start the cloned VM"
 echo "--------------------------------------------------------"
-if ! powerState=$(getPowerState "${iPath}"); then
-	writeErr "could not get power state for VM at path ${iPath}"
+if ! validateAndPowerOn "${iPath}" ${timeout_seconds}; then
+	writeErr "powering on VM ${iPath}"
 	exit 1
 fi
-
-echo "Powered state: $powerState"
-
-if [[ ! ${powerState} == "poweredOn" ]]; then
-	if ! powerOnVM "${iPath}"; then
-		writeErr "powering on VM ${iPath}"
-		exit 1
-	fi
-fi
-
-#Wait for windows to completely boot up, a blank or toolsNotRunning value indicates it's still baking
-while read status; do
-	echo "Tool status: ${status}"
-	if [[ ${status} == "toolsOk" ]]; then
-		break
-	fi
-
-	if [[ ${status} =~ ^(toolsNotInstalled|toolsOld)$ ]]; then
-		writeErr "Vmware tools are not installed or running an old version, on vm ${iPath}. Please fix to continue."
-		exit 1
-	fi
-
-	sleep 5
-done <<< ${toolStatus}
 
 echo "Done"
 

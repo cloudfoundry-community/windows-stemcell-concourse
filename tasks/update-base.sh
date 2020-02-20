@@ -24,6 +24,7 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
+timeout=${timeout:=30m}
 
 #######################################
 #       Source helper functions
@@ -56,92 +57,66 @@ if ! exists=$(vmExists "${baseVMIPath}"); then
 	exit 1
 fi
 
-[[ ${exists} == "false" ]] && (
+[[ ${exists} == *"false"* ]] && (
 	writeErr "no base VM found at path ${baseVMIPath}"
 	exit 1
 )
 
-if ! powerOnVM "${baseVMIPath}"; then
-	writeErr "powering on VM ${base_vm_name}"
+if ! powerState=$(getPowerState "${baseVMIPath}"); then
+	writeErr "could not get power state for VM at path ${baseVMIPath}"
 	exit 1
 fi
 
-#Wait for windows to completely boot up
-while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsOk' ]]
-do	
-	printf .
-	sleep 10
-done
+echo "Powered state: $powerState"
+
+if [[ ! ${powerState} == *"poweredOn"* ]]; then
+	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
+		writeErr "powering on VM ${base_vm_name}"
+		exit 1
+	fi
+fi
 
 echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Running windows update"
 echo "--------------------------------------------------------"
-printf "|"
+
 for ((i = 1; i <= 3; i++)); do
-	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot"  2>&1); then
+	echo "    starting ${i}"
+	if ! exitCode=$(powershellCmd "${baseVMIPath}" "administrator" "${admin_password}" "Get-WUInstall -AcceptAll -IgnoreReboot" 2>&1); then
 		echo "${exitCode}" #write the error echo'd back
 		writeErr "could not run windows update"
 		exit 1
 	fi
 
-	if [[ ${exitCode} == "1" ]]; then
+	if [[ ${exitCode} == 1 ]]; then
 		writeErr "windows update process exited with error"
 		exit 1
 	fi
 
-	if ! ret=$(shutdownVM "${baseVMIPath}"); then
-		writeErr "could not shutdown VM, ${ret}"
+	if ! shutdownVM "${baseVMIPath}" ${timeout}; then
+		writeErr "could not shutdown VM at path ${baseVMIPath}"
 		exit 1
 	fi
 
-	printf "/"
-
-	while [[ $(getPowerState "${baseVMIPath}") == *"poweredOn"* ]]
-	do
-		printf "-"
-		sleep 10
-	done
-
-	while [[ $(getToolsStatus "${baseVMIPath}" ) != 'toolsNotRunning' ]]
-	do
-	 	printf "-"
-	 	sleep 2
-	done
-
-	if ! ret=$(powerOnVM "${baseVMIPath}"); then
-		writeErr "could not power on VM, ${ret}"
+	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
+		writeErr "could not power on VM at path ${baseVMIPath}"
 		exit 1
 	fi
 
-	while [[ $(getPowerState "${baseVMIPath}") != *"poweredOn"* ]]
-	do
-		printf "\\"
-		sleep 10
-	done
-
-	#Wait for windows to completely boot up
-	while [[ $(getToolsStatus "${baseVMIPath}") != 'toolsOk' ]]
-	do
-		printf "."
-		sleep 10
-	done
-
-	printf "|"
+	echo "    finished ${i}"
 done
-echo ""
-echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Updates done, shutting down"
 echo "--------------------------------------------------------"
-if ! retryop "shutdownVM '${baseVMIPath}'" 6 10; then
-	writeErr "shutdown vm"
+if ! shutdownVM "${baseVMIPath}" ${timeout}; then
+	writeErr "could not shutdown vm at path ${baseVMIPath}"
 	exit 1
-else
-	echo "Done"
 fi
+
+echo "Done"
 
 #######################################
 #       Return result

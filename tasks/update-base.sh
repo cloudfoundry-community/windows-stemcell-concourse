@@ -49,6 +49,8 @@ fi
 
 baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
 
+${GOVC_EXE} vm.info -json "${base_vm_name}"
+
 #Look for base VM
 echo "--------------------------------------------------------"
 echo "Validate and power on VM"

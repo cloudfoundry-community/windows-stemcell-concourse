@@ -336,7 +336,7 @@ function getToolsVersionStatus() {
 		echo "${info}"
 		return 1
 	fi # 2>&1
-	echo ${info}
+
 	if ! toolsVersionStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2'); then
 		writeErr "Could not parse vm info at ${vm_ipath}"
 		return 1
@@ -348,7 +348,6 @@ function getToolsVersionStatus() {
 	echo "${toolsVersionStatus}"
 	return 0
 }
-
 
 ######################################
 # Description:

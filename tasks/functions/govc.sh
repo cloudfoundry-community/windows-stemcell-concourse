@@ -454,7 +454,7 @@ function shutdownVM() {
 #######################################
 function waitForToolStatus(){
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2}"
+	local vmware_tools_status="${2:-"${toolStatusCurrent}"}"
 	local desired_status="${3:-"${toolsOk}"}" #toolsNotRunning
 	local timeout=${4:-30s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
 	local sleep_time=${5:-5s}
@@ -506,14 +506,14 @@ function validateToolsVersionStatus(){
 	local vmware_tools_status=${2:-"${toolStatusCurrent}"}
 
 	if ! toolStatus=$(getToolsStatus "${vm_ipath}"); then
-		writeErr "Could not get tool status for VM at path ${vm_ipath}"
+		writeErr "Could not get tool status for VM at path ${vm_ipath}, ${toolStatus}"
 		return 1
 	fi
 
 	echo "Current tools status: ${toolStatus}"
 
 	if ! toolVersionStatus=$(getToolsVersionStatus "${vm_ipath}"); then
-		writeErr "Could not get tool version status for VM at path ${vm_ipath}"
+		writeErr "Could not get tool version status for VM at path ${vm_ipath}, ${toolVersionStatus}"
 		return 1
 	fi
 

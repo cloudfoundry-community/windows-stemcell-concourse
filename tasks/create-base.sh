@@ -248,7 +248,7 @@ echo "Validating vmware tools"
 echo "--------------------------------------------------------"
 
 if ! validateToolsVersionStatus "${baseVMIPath}" "${vmware_tools_status}"; then
-	return 1
+	exit 1
 fi
 
 echo "Done"

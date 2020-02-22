@@ -25,6 +25,7 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
 timeout=${timeout:=30m}
+vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################
 #       Source helper functions
@@ -70,7 +71,7 @@ fi
 echo "Powered state: $powerState"
 
 if [[ ! ${powerState} == *"poweredOn"* ]]; then
-	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
+	if ! powerOnVM "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
 		writeErr "powering on VM ${base_vm_name}"
 		exit 1
 	fi
@@ -95,12 +96,12 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	if ! shutdownVM "${baseVMIPath}" ${timeout}; then
+	if ! shutdownVM "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
 		writeErr "could not shutdown VM at path ${baseVMIPath}"
 		exit 1
 	fi
 
-	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
+	if ! powerOnVM "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
 		writeErr "could not power on VM at path ${baseVMIPath}"
 		exit 1
 	fi
@@ -111,7 +112,7 @@ done
 echo "--------------------------------------------------------"
 echo "Updates done, shutting down"
 echo "--------------------------------------------------------"
-if ! shutdownVM "${baseVMIPath}" ${timeout}; then
+if ! shutdownVM "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
 	writeErr "could not shutdown vm at path ${baseVMIPath}"
 	exit 1
 fi

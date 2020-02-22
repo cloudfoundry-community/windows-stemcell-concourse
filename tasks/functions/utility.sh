@@ -101,3 +101,11 @@ function retryop()
 
 #for running subshell commands within timeout function
 typeset -fx writeErr
+
+toolsOk="toolsOk"
+toolsNotRunning="toolsNotRunning"
+toolsOld="toolsOld"
+toolStatusCurrent="current"
+toolsStatusSupported="supported"
+guestToolsCurrent="guestToolsCurrent"
+guestToolsSupportedOld="guestToolsSupportedOld"

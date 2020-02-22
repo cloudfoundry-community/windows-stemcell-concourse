@@ -28,6 +28,7 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 [[ -z "${gateway_address}" ]] && (echo "gateway_address is a required value" && exit 1)
 [[ -z "${dns_address}" ]] && (echo "dns_address is a required value" && exit 1)
 [[ -z "${admin_password}" ]] && (echo "admin_password is a required value" && exit 1)
+[[ -z "${vmware_tools_version}" ]] && (echo "vmware_tools_version is a required value" && exit 1)
 
 #######################################
 #       Default optional
@@ -49,6 +50,7 @@ firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
 windows_install_timeout=${windows_install_timeout:=10m} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
+vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################
 #       Source helper functions
@@ -187,7 +189,7 @@ fi
 echo "--------------------------------------------------------"
 echo "Power on VM and begin install windows"
 echo "--------------------------------------------------------"
-if ! powerOnVM "${baseVMIPath}" 0 1; then
+if ! powerOnVM "${baseVMIPath}" "${vmware_tools_status}" 0 1; then
 	writeErr "powering on VM"
 	exit 1
 else
@@ -246,33 +248,8 @@ echo "--------------------------------------------------------"
 echo "Validating vmware tools"
 echo "--------------------------------------------------------"
 
-if ! toolStatus=$(getToolsStatus "${baseVMIPath}"); then
-	writeErr "Could not get tool status for VM at path ${baseVMIPath}"
-	exit 1
-fi
-
-echo "Current tools status: ${toolStatus}"
-
-if ! toolVersionStatus=$(getToolsVersionStatus "${baseVMIPath}"); then
-	writeErr "Could not get tool version status for VM at path ${baseVMIPath}"
-	exit 1
-fi
-
-echo "Current tools version status: ${toolVersionStatus}"
-
-if [[ ${toolStatus} != *"toolsNotRunning"* ]]; then #because sysprep shut the VM off
-	if [[ ${toolStatus} == *"toolsNotInstalled"* ]]; then
-		writeErr "VMware tools are not installed on VM at path ${baseVMIPath}. If the VM has no public access to download tools, use the vmware-tools-uri var to provide an internal place to download from."
-		exit 1
-	fi
-
-	if [[ ${toolVersionStatus} == *"guestToolsSupportedOld"* ]]; then
-		writeErr "Tools are installed but running an old version. Use the vmware-tools-uri var to provide up to date tools install and re-run this task."
-		exit 1
-	else
-		writeErr "VMware tools status is being reported in a bad state, but no other details are available. Verify the version installed is compatible with the ESXi host it is on, in vCenter."
-		exit 1
-	fi
+if ! validateToolsVersionStatus "${baseVMIPath}" "${vmware_tools_status}"; then
+	return 1
 fi
 
 echo "Done"

@@ -503,7 +503,7 @@ function waitForToolStatus(){
 #######################################
 function validateToolsVersionStatus(){
 	local vm_ipath="${1}"
-	local vmware_tools_status=${2:="${toolStatusCurrent}"}
+	local vmware_tools_status=${2:-"${toolStatusCurrent}"}
 
 	if ! toolStatus=$(getToolsStatus "${vm_ipath}"); then
 		writeErr "Could not get tool status for VM at path ${vm_ipath}"
@@ -527,10 +527,10 @@ function validateToolsVersionStatus(){
 	fi
 
 	if [[ "${toolVersionStatus}" != *"${guestToolsCurrent}"* ]]; then
-		if [[ ("${vmware_tools_status}" == *"${toolStatusCurrent}"*) && (${toolVersionStatus} == *"${guestToolsSupportedOld}"*) ]]; then
+		if [[ ("${vmware_tools_status}" == *"${toolStatusCurrent}"*) && ("${toolVersionStatus}" == *"${guestToolsSupportedOld}"*) ]]; then
 			writeErr "Tools are installed but running an old version. Use the vmware-tools-uri var to provide up to date install or change the vmware-tools-status value."
 			return 1
-		else if [[ ("${vmware_tools_status}" == *"${toolsStatusSupported}"*) && (${toolVersionStatus} == *"${guestToolsSupportedOld}"*) ]]; then
+		else if [[ ("${vmware_tools_status}" == *"${toolsStatusSupported}"*) && ("${toolVersionStatus}" == *"${guestToolsSupportedOld}"*) ]]; then
 			echo "VMware tools are running an old version but still compatible with the ESXi host, continuing."
 		else
 			writeErr "VMware tools status is being reported in a bad state, no other details are available. Verify the version installed is compatible with the ESXi host it is on in vCenter."

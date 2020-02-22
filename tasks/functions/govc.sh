@@ -231,7 +231,7 @@ function getInfo() {
 	local vm_ipath="${1}"
 
 	if ! info=$(${GOVC_EXE} vm.info -json -vm.ipath="${vm_ipath}"); then
-		writeErr "Could not get vm info at ${vm_ipath}"
+		writeErr "Could not get vm info at ${vm_ipath}, ${info}"
 		return 1
 	fi
 
@@ -306,7 +306,7 @@ function powerOnVM() {
 function getToolsStatus() {
 	local vm_ipath="${1}"
 
-	if ! info=$(getInfo -json "${vm_ipath}"); then
+	if ! info=$(getInfo "${vm_ipath}"); then
 		echo "${info}"
 		return 1
 	fi # 2>&1
@@ -332,16 +332,16 @@ function getToolsStatus() {
 function getToolsVersionStatus() {
 	local vm_ipath="${1}"
 
-	if ! info=$(getInfo -json "${vm_ipath}"); then
+	if ! info=$(getInfo "${vm_ipath}"); then
 		echo "${info}"
 		return 1
 	fi # 2>&1
-
+	echo ${info}
 	if ! toolsVersionStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2'); then
 		writeErr "Could not parse vm info at ${vm_ipath}"
 		return 1
 	elif [[ -z "${toolsVersionStatus}" ]]; then
-		writeErr "Tools state could not be parsed for VM at ${vm_ipath}"
+		writeErr "Tools version status could not be parsed for VM at ${vm_ipath}"
 		return 1
 	fi
 

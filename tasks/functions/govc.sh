@@ -306,7 +306,7 @@ function powerOnVM() {
 function getToolsStatus() {
 	local vm_ipath="${1}"
 
-	if ! info=$(getInfo "${vm_ipath}"); then
+	if ! info=$(getInfo -json "${vm_ipath}"); then
 		echo "${info}"
 		return 1
 	fi # 2>&1
@@ -332,7 +332,7 @@ function getToolsStatus() {
 function getToolsVersionStatus() {
 	local vm_ipath="${1}"
 
-	if ! info=$(getInfo "${vm_ipath}"); then
+	if ! info=$(getInfo -json "${vm_ipath}"); then
 		echo "${info}"
 		return 1
 	fi # 2>&1

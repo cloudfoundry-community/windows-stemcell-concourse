@@ -28,7 +28,6 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 [[ -z "${gateway_address}" ]] && (echo "gateway_address is a required value" && exit 1)
 [[ -z "${dns_address}" ]] && (echo "dns_address is a required value" && exit 1)
 [[ -z "${admin_password}" ]] && (echo "admin_password is a required value" && exit 1)
-[[ -z "${vmware_tools_version}" ]] && (echo "vmware_tools_version is a required value" && exit 1)
 
 #######################################
 #       Default optional

@@ -49,7 +49,7 @@ fi
 
 baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}")
 
-${GOVC_EXE} vm.info -json "${base_vm_name}"
+${GOVC_EXE} vm.info -json -vm.ipath="${baseVMIPath}"
 
 #Look for base VM
 echo "--------------------------------------------------------"

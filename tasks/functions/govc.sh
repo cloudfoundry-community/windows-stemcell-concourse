@@ -310,7 +310,7 @@ function getToolsStatus() {
 		echo "${info}"
 		return 1
 	fi # 2>&1
-echo "${info}"
+
 	if ! toolsStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsStatus'); then
 		writeErr "Could not parse vm info at ${vm_ipath}"
 		return 1
@@ -336,13 +336,17 @@ function getToolsVersionStatus() {
 		echo "${info}"
 		return 1
 	fi
-	echo "${info}"
+	
 	if ! toolsVersionStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2'); then
 		writeErr "Could not parse vm info at ${vm_ipath}"
 		return 1
 	elif [[ -z "${toolsVersionStatus}" ]]; then
 		writeErr "Tools version status could not be parsed for VM at ${vm_ipath}"
 		return 1
+
+		#info=$(${GOVC_EXE} vm.info -json "Win-Stemcell-Base")
+		#echo $info
+		#toolsVersionStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2')
 	fi
 
 	echo "${toolsVersionStatus}"
@@ -457,21 +461,9 @@ function waitForToolStatus(){
 	local desired_status="${3:-"${toolsOk}"}" #toolsNotRunning
 	local timeout=${4:-30s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
 	local sleep_time=${5:-5s}
-
-	if ! validateToolsVersionStatus "${vm_ipath}" "${vmware_tools_status}"; then
-		return 1
-	fi
-
-	if [[ ("${desired_status}" == *"${toolsOk}"*) && ("${vmware_tools_status}" != *"${toolStatusCurrent}"*) ]]; then
-		if ! toolVersionStatus=$(getToolsVersionStatus "${vm_ipath}"); then
-			writeErr "Could not get tool version status for VM at path ${vm_ipath}"
-			return 1
-		fi
-
-		if [[ ${toolVersionStatus} == *"${guestToolsSupportedOld}"* ]]; then
-			#when the tools are compatible but not up to date, a status of toolsOld is reported
-			desired_status="${toolsOld}"
-		fi
+	
+	if [[ ("${desired_status}" == *"${toolsOk}"*) && ("${vmware_tools_status}" == *"${toolsStatusSupported}"*) ]]; then
+		desired_status="${toolsOk}|${toolsOld}"
 	fi
 
 	echo "Waiting for a tool status of ${desired_status}"
@@ -479,7 +471,7 @@ function waitForToolStatus(){
 
 	set +e #turn "exit on error" off so we can catch the timeout
 	
-	timeout --foreground ${timeout} bash -c 'while [[ $(getToolsStatus "'${vm_ipath}'") != *"'${desired_status}'"* ]]; do echo -ne "."; sleep '${sleep_time}'; done'
+	timeout --foreground ${timeout} bash -c 'while [[ ! $(getToolsStatus "'${vm_ipath}'") =~ ^('${desired_status}')$ ]]; do echo -ne "."; sleep '${sleep_time}'; done'
 
 	if [[ $? == 124 ]]; then
 		echo ""
@@ -511,6 +503,16 @@ function validateToolsVersionStatus(){
 
 	echo "Current tools status: ${toolStatus}"
 
+	if [[ "${toolStatus}" == *"${toolsNoteInstalled}"* ]]; then
+		writeErr "VMware tools are not installed on VM at path ${vm_ipath}. If the VM has no public access to download tools, use the vmware-tools-uri var to provide an internal place to download from."
+		return 1
+	fi
+
+	#if the VM is not running, there is a chance no version status will be reported
+	#if [[ "${toolStatus}" == *"${toolsNotRunning}"* ]]; then
+	#	return 0
+	#fi
+
 	if ! toolVersionStatus=$(getToolsVersionStatus "${vm_ipath}"); then
 		writeErr "Could not get tool version status for VM at path ${vm_ipath}, ${toolVersionStatus}"
 		return 1
@@ -519,11 +521,6 @@ function validateToolsVersionStatus(){
 	echo "Current tools version status: ${toolVersionStatus}"
 
 	echo "vmware-tools-status setting: ${vmware_tools_status}"
-
-	if [[ "${toolStatus}" == *"toolsNotInstalled"* ]]; then
-		writeErr "VMware tools are not installed on VM at path ${vm_ipath}. If the VM has no public access to download tools, use the vmware-tools-uri var to provide an internal place to download from."
-		return 1
-	fi
 
 	if [[ "${toolVersionStatus}" != *"${guestToolsCurrent}"* ]]; then
 		if [[ ("${vmware_tools_status}" == *"${toolStatusCurrent}"*) && ("${toolVersionStatus}" == *"${guestToolsSupportedOld}"*) ]]; then

@@ -105,7 +105,7 @@ typeset -fx writeErr
 toolsOk="toolsOk"
 toolsNotRunning="toolsNotRunning"
 toolsOld="toolsOld"
-toolsNoteInstalled="toolsNotInstalled"
+toolsNotInstalled="toolsNotInstalled"
 toolStatusCurrent="current"
 toolsStatusSupported="supported"
 guestToolsCurrent="guestToolsCurrent"

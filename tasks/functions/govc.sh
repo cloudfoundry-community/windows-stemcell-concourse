@@ -475,7 +475,7 @@ function waitForToolStatus(){
 
 	if [[ $? == 124 ]]; then
 		echo ""
-		writeErr "Timed out waiting for tool status"
+		writeErr "Timed out waiting for tool status of ${desired_status}. Last reported status was $(getToolsStatus ${vm_ipath})."
 		return 1
 	fi
 
@@ -503,7 +503,7 @@ function validateToolsVersionStatus(){
 
 	echo "Current tools status: ${toolStatus}"
 
-	if [[ "${toolStatus}" == *"${toolsNoteInstalled}"* ]]; then
+	if [[ "${toolStatus}" == *"${toolsNotInstalled}"* ]]; then
 		writeErr "VMware tools are not installed on VM at path ${vm_ipath}. If the VM has no public access to download tools, use the vmware-tools-uri var to provide an internal place to download from."
 		return 1
 	fi
@@ -767,7 +767,7 @@ function createVMwithISO() {
 
 	cmd="${GOVC_EXE} vm.create ${args} ${vm_name}" #finally add the VM name
 
-	echo ${cmd} #for reference
+	#echo ${cmd} #for reference
 	if ! eval ${cmd}; then
 		writeErr "Could not create VM ${vm_name}"
 		return 1

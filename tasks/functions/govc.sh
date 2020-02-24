@@ -273,9 +273,8 @@ function getPowerState() {
 #######################################
 function powerOnVM() {
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2}"
-	local timeout=${3:-30s}
-	local skip_toolstatus=${4:-0}
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -on=true -wait=true); then
 		if [[ "${ret}" == *"current state (Powered on)"* ]]; then
@@ -290,7 +289,7 @@ function powerOnVM() {
 		return 0
 	fi
 
-	if ! waitForToolStatus "${vm_ipath}" "${vmware_tools_status}" "${toolsOk}" ${timeout}; then
+	if ! waitForToolStatus "${vm_ipath}" "${toolsOk}" ${timeout}; then
 		return 1
 	fi
 
@@ -361,15 +360,19 @@ function getToolsVersionStatus() {
 #######################################
 function restartVM() {
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2}"
-	local timeout=${3:-30s}
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -r=true -wait=true 2>&1); then
 		writeErr "Could not restart VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
-	if ! waitForToolStatus "${vm_ipath}" "${vmware_tools_status}" "${toolsOk}" ${timeout}; then
+	if [[ ${skip_toolstatus} -eq 1 ]]; then
+		return 0
+	fi
+
+	if ! waitForToolStatus "${vm_ipath}" "${toolsOk}" ${timeout}; then
 		return 1
 	fi
 
@@ -402,9 +405,8 @@ function connectDevice() {
 #######################################
 function powerOffVM() {
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2}"
-	local timeout=${3:-30s}
-	local skip_toolstatus=${4:-0}
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -off=true -wait=true 2>&1); then
 		writeErr "Could not power off VM at ${vm_ipath}, ${ret}"
@@ -415,7 +417,7 @@ function powerOffVM() {
 		return 0
 	fi
 
-	if ! waitForToolStatus "${vm_ipath}" "${vmware_tools_status}" "${toolsNotRunning}" ${timeout}; then
+	if ! waitForToolStatus "${vm_ipath}" "${toolsNotRunning}" ${timeout}; then
 		return 1
 	fi
 	
@@ -432,15 +434,19 @@ function powerOffVM() {
 #######################################
 function shutdownVM() {
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2}"
-	local timeout=${3:-30s}
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -s=true -wait=true 2>&1); then
 		writeErr "Could not shutdown VM at ${vm_ipath}, ${ret}"
 		return 1
 	fi
 
-	if ! waitForToolStatus "${vm_ipath}" "${vmware_tools_status}" "${toolsNotRunning}" ${timeout}; then
+	if [[ ${skip_toolstatus} -eq 1 ]]; then
+		return 0
+	fi
+
+	if ! waitForToolStatus "${vm_ipath}" "${toolsNotRunning}" ${timeout}; then
 		return 1
 	fi
 
@@ -457,12 +463,11 @@ function shutdownVM() {
 #######################################
 function waitForToolStatus(){
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2:-"${toolStatusCurrent}"}"
-	local desired_status="${3:-"${toolsOk}"}" #toolsNotRunning
-	local timeout=${4:-30s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
-	local sleep_time=${5:-5s}
+	local desired_status="${2:-"${toolsOk}"}" #toolsNotRunning
+	local timeout=${3:-30s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
+	local sleep_time=${4:-5s}
 	
-	if [[ ("${desired_status}" == *"${toolsOk}"*) && ("${vmware_tools_status}" == *"${toolsStatusSupported}"*) ]]; then
+	if [[ ("${desired_status}" == *"${toolsOk}"*) ]]; then
 		desired_status="${toolsOk}|${toolsOld}"
 	fi
 
@@ -597,9 +602,8 @@ function vmExists() {
 #######################################
 function validateAndPowerOn() {
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2}"
-	local timeout=${3:-30s}
-	local skip_toolstatus=${4:-0}
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! powerState=$(getPowerState ${vm_ipath}); then
 		echo "${powerState}"
@@ -607,7 +611,7 @@ function validateAndPowerOn() {
 	fi
 
 	if [[ ! ${powerState} == "poweredOn" ]]; then
-		if ! powerOnVM "${vm_ipath}" "${vmware_tools_status}" ${timeout} ${skip_toolstatus}; then return 1; fi
+		if ! powerOnVM "${vm_ipath}" ${timeout} ${skip_toolstatus}; then return 1; fi
 	fi
 
 	return 0
@@ -621,8 +625,8 @@ function validateAndPowerOn() {
 #######################################
 function validateAndPowerOff() {
 	local vm_ipath="${1}"
-	local vmware_tools_status="${2}"
-	local timeout=${3:-30s}
+	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! powerState=$(getPowerState ${vm_ipath}); then
 		echo "${powerState}"
@@ -630,7 +634,7 @@ function validateAndPowerOff() {
 	fi
 
 	if [[ "${powerState}" == *"poweredOn"* ]]; then
-		if ! powerOffVM "${vm_ipath}" "${vmware_tools_status}" ${timeout}; then return 1; fi
+		if ! powerOffVM "${vm_ipath}" ${timeout} ${skip_toolstatus}; then return 1; fi
 	fi
 
 	return 0

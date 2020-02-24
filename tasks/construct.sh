@@ -92,8 +92,19 @@ echo "Done"
 echo "--------------------------------------------------------"
 echo "Start the cloned VM"
 echo "--------------------------------------------------------"
-if ! validateAndPowerOn "${iPath}" "${vmware_tools_status}" ${timeout}; then
+if ! validateAndPowerOn "${iPath}" ${timeout}; then
 	writeErr "powering on VM ${iPath}"
+	exit 1
+fi
+
+echo "Done"
+
+echo "--------------------------------------------------------"
+echo "Validating vmware tools"
+echo "--------------------------------------------------------"
+
+if ! validateToolsVersionStatus "${iPath}" "${vmware_tools_status}"; then
+	writeErr "could not validate tools on VM at path ${iPath}"
 	exit 1
 fi
 

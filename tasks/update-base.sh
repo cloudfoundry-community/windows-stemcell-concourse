@@ -63,8 +63,9 @@ fi
 	exit 1
 )
 
-if ! validateAndPowerOn "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
+if ! validateAndPowerOn "${baseVMIPath}" ${timeout}; then
 	writeErr "could not power on VM at path ${baseVMIPath}"
+	shutdownVM "${baseVMIPath}" 0 1
 	exit 1
 fi
 
@@ -98,12 +99,12 @@ for ((i = 1; i <= 3; i++)); do
 		exit 1
 	fi
 
-	if ! shutdownVM "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
+	if ! shutdownVM "${baseVMIPath}" ${timeout}; then
 		writeErr "could not shutdown VM at path ${baseVMIPath}"
 		exit 1
 	fi
 
-	if ! powerOnVM "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
+	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
 		writeErr "could not power on VM at path ${baseVMIPath}"
 		exit 1
 	fi
@@ -114,7 +115,7 @@ done
 echo "--------------------------------------------------------"
 echo "Updates done, shutting down"
 echo "--------------------------------------------------------"
-if ! shutdownVM "${baseVMIPath}" "${vmware_tools_status}" ${timeout}; then
+if ! shutdownVM "${baseVMIPath}" ${timeout}; then
 	writeErr "could not shutdown vm at path ${baseVMIPath}"
 	exit 1
 fi

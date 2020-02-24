@@ -188,7 +188,7 @@ fi
 echo "--------------------------------------------------------"
 echo "Power on VM and begin install windows"
 echo "--------------------------------------------------------"
-if ! powerOnVM "${baseVMIPath}" "${vmware_tools_status}" 0 1; then
+if ! powerOnVM "${baseVMIPath}" 0 1; then
 	writeErr "powering on VM"
 	exit 1
 else

@@ -216,5 +216,3 @@ jobs:
       - put: stemcell-store
         params:
           file: stemcell/*.tgz
-        get_params:
-          skip_download: true

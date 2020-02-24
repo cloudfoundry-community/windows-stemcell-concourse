@@ -24,7 +24,8 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-timeout_seconds=${timeout_seconds:=30}
+timeout=${timeout:=30s}
+vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################
 #       Source helper functions
@@ -91,8 +92,19 @@ echo "Done"
 echo "--------------------------------------------------------"
 echo "Start the cloned VM"
 echo "--------------------------------------------------------"
-if ! validateAndPowerOn "${iPath}" ${timeout_seconds}; then
+if ! validateAndPowerOn "${iPath}" ${timeout}; then
 	writeErr "powering on VM ${iPath}"
+	exit 1
+fi
+
+echo "Done"
+
+echo "--------------------------------------------------------"
+echo "Validating vmware tools"
+echo "--------------------------------------------------------"
+
+if ! validateToolsVersionStatus "${iPath}" "${vmware_tools_status}"; then
+	writeErr "could not validate tools on VM at path ${iPath}"
 	exit 1
 fi
 

@@ -38,6 +38,8 @@ params:
   admin_password: ((admin-password))
   vmware_tools_uri: ((vmware-tools-uri))
   windows_update_module_uri: ((windows-update-module-uri))
+
+  vmware_tools_status: ((vmware-tools-status))
     
 run:
   path: pipeline-resources/tasks/create-base.sh

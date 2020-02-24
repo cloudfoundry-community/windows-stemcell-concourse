@@ -30,6 +30,7 @@ vm_cpu=${vm_cpu:=4}
 vm_memory_mb=${vm_memory_mb:=8000}
 vm_resource_pool=${vm_resource_pool:=''}
 timeout=${timeout:=30s}
+vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################
 #       Source helper functions
@@ -74,23 +75,25 @@ fi
 	exit 1
 )
 
-if [[ ! ${powerState} == "poweredOff" ]]; then
-	echo "--------------------------------------------------------"
-	echo "Powering off base VM"
-	echo "--------------------------------------------------------"
+echo "--------------------------------------------------------"
+echo "Power off base VM"
+echo "--------------------------------------------------------"
 
-	if ! powerOffVM "${baseVMIPath}" ${timeout}; then
-		writeErr "powering on VM ${baseVMIPath}"
-		exit 1
-	fi
+if ! validateAndPowerOff "${baseVMIPath}" ${timeout}; then
+	writeErr "could not power off VM at path ${baseVMIPath}"
+	exit 1
 fi
 
+echo "Done"
+
 echo "--------------------------------------------------------"
-echo "Destroy Stembuild VM ${stembuild_vm_name} if already exists"
+echo "Destroy Stembuild VM ${stembuild_vm_name} (if exists)"
 echo "--------------------------------------------------------"
 
 stembuildVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${stembuild_vm_name}")
 destroyVM "${stembuildVMIPath}"
+
+echo "Done"
 
 echo "--------------------------------------------------------"
 echo "Clone Base VM"

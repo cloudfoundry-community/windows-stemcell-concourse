@@ -24,7 +24,8 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-timeout=${timeout:=30m}
+timeout=${timeout:=1m}
+vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################
 #       Source helper functions
@@ -50,7 +51,7 @@ baseVMIPath=$(buildIpath "${vcenter_datacenter}" "${vm_folder}" "${base_vm_name}
 
 #Look for base VM
 echo "--------------------------------------------------------"
-echo "Validate and power on VM"
+echo "Power on VM"
 echo "--------------------------------------------------------"
 if ! exists=$(vmExists "${baseVMIPath}"); then
 	writeErr "could not look for base VM at path ${baseVMIPath}"
@@ -62,18 +63,21 @@ fi
 	exit 1
 )
 
-if ! powerState=$(getPowerState "${baseVMIPath}"); then
-	writeErr "could not get power state for VM at path ${baseVMIPath}"
+if ! validateAndPowerOn "${baseVMIPath}" ${timeout}; then
+	writeErr "could not power on VM at path ${baseVMIPath}"
+	shutdownVM "${baseVMIPath}" 0 1
 	exit 1
 fi
 
-echo "Powered state: $powerState"
+echo "Done"
 
-if [[ ! ${powerState} == *"poweredOn"* ]]; then
-	if ! powerOnVM "${baseVMIPath}" ${timeout}; then
-		writeErr "powering on VM ${base_vm_name}"
-		exit 1
-	fi
+echo "--------------------------------------------------------"
+echo "Validating vmware tools"
+echo "--------------------------------------------------------"
+
+if ! validateToolsVersionStatus "${baseVMIPath}" "${vmware_tools_status}"; then
+	writeErr "could not validate tools on VM at path ${baseVMIPath}"
+	exit 1
 fi
 
 echo "Done"

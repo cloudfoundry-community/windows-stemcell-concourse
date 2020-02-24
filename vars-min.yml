@@ -57,3 +57,4 @@ language: ''
 product-key: ''
 vmware-tools-uri: '' #must be less than 250 chars
 windows-update-module-uri: '' #must be less than 250 chars
+vmware-tools-status: '' #current|supported

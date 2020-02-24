@@ -49,6 +49,7 @@ firmware_type=${firmware_type:='bios'}
 disk_controller_type=${disk_controller_type:='lsilogic-sas'}
 iso_folder=${iso_folder:='Win-Stemcell-ISO'}
 windows_install_timeout=${windows_install_timeout:=10m} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
+vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################
 #       Source helper functions
@@ -246,23 +247,7 @@ echo "--------------------------------------------------------"
 echo "Validating vmware tools"
 echo "--------------------------------------------------------"
 
-if ! toolStatus=$(getToolsStatus "${baseVMIPath}"); then
-	writeErr "Could not get tool status for VM at path ${baseVMIPath}"
-	exit 1
-fi
-
-if [[ ${toolStatus} != *"toolsOk"* ]]; then
-	if [[ ${toolStatus} == *"toolsNotInstalled"* ]]; then
-		writeErr "VMware tools are not insalled on VM at path ${baseVMIPath}"
-		exit 1
-	fi
-
-	if [[ ${toolStatus} == *"toolsOld"* ]]; then
-		writeErr "Update VMware tools version on VM at path ${baseVMIPath} before continuing"
-		exit 1
-	fi
-
-	writeErr "VMware tools status is being reported in a bad state, but no other details are available. Find the VM in vCenter to further diagnose."
+if ! validateToolsVersionStatus "${baseVMIPath}" "${vmware_tools_status}"; then
 	exit 1
 fi
 

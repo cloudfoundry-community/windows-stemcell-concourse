@@ -4,9 +4,6 @@
 # Task Description:
 #   Functions to interact with govc cli
 
-toolsOk="toolsOk"
-toolsNotRunning="toolsNotRunning"
-
 ######################################
 # Description: Initialize GOVC_* environment variables used by the govc binary.
 # Globals:
@@ -74,6 +71,7 @@ function initializeGovc() {
 	typeset -fx getInfo
 	typeset -fx getPowerState
 	typeset -fx getToolsStatus
+	typeset -fx getToolsVersionStatus
 
 	return 0
 }
@@ -233,7 +231,7 @@ function getInfo() {
 	local vm_ipath="${1}"
 
 	if ! info=$(${GOVC_EXE} vm.info -json -vm.ipath="${vm_ipath}"); then
-		writeErr "Could not get vm info at ${vm_ipath}"
+		writeErr "Could not get vm info at ${vm_ipath}, ${info}"
 		return 1
 	fi
 
@@ -291,13 +289,12 @@ function powerOnVM() {
 		return 0
 	fi
 
-	if ! waitForToolStatus "${vm_ipath}" "${toolsOk}" ${timeout} ; then
+	if ! waitForToolStatus "${vm_ipath}" "${toolsOk}" ${timeout}; then
 		return 1
 	fi
 
 	return 0
 }
-
 
 ######################################
 # Description:
@@ -329,15 +326,50 @@ function getToolsStatus() {
 # Description:
 #
 # Arguments:
+# | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2'
+#######################################
+function getToolsVersionStatus() {
+	local vm_ipath="${1}"
+
+	if ! info=$(getInfo "${vm_ipath}"); then
+		echo "${info}"
+		return 1
+	fi
+	
+	if ! toolsVersionStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2'); then
+		writeErr "Could not parse vm info at ${vm_ipath}"
+		return 1
+	elif [[ -z "${toolsVersionStatus}" ]]; then
+		writeErr "Tools version status could not be parsed for VM at ${vm_ipath}"
+		return 1
+
+		#info=$(${GOVC_EXE} vm.info -json "Win-Stemcell-Base")
+		#echo $info
+		#toolsVersionStatus=$(echo ${info} | jq -r '.VirtualMachines[].Guest.ToolsVersionStatus2')
+	fi
+
+	echo "${toolsVersionStatus}"
+	return 0
+}
+
+######################################
+# Description:
+#
+# Arguments:
 #
 #######################################
 function restartVM() {
 	local vm_ipath="${1}"
 	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -r=true -wait=true 2>&1); then
 		writeErr "Could not restart VM at ${vm_ipath}, ${ret}"
 		return 1
+	fi
+
+	if [[ ${skip_toolstatus} -eq 1 ]]; then
+		return 0
 	fi
 
 	if ! waitForToolStatus "${vm_ipath}" "${toolsOk}" ${timeout}; then
@@ -403,10 +435,15 @@ function powerOffVM() {
 function shutdownVM() {
 	local vm_ipath="${1}"
 	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! ret=$(${GOVC_EXE} vm.power -vm.ipath="${vm_ipath}" -s=true -wait=true 2>&1); then
 		writeErr "Could not shutdown VM at ${vm_ipath}, ${ret}"
 		return 1
+	fi
+
+	if [[ ${skip_toolstatus} -eq 1 ]]; then
+		return 0
 	fi
 
 	if ! waitForToolStatus "${vm_ipath}" "${toolsNotRunning}" ${timeout}; then
@@ -429,51 +466,78 @@ function waitForToolStatus(){
 	local desired_status="${2:-"${toolsOk}"}" #toolsNotRunning
 	local timeout=${3:-30s} #is a floating point number with an optional suffix: 's' for seconds (the default), 'm' for minutes, 'h' for hours or 'd' for days.  A duration of 0 disables the associated timeout.
 	local sleep_time=${4:-5s}
-
-	echo "Waiting for a tool status of ${desired_status}"
-
-	if ! toolStatus=$(getToolsStatus "${vm_ipath}"); then
-		writeErr "Could not get tool status for VM at path ${vm_ipath}"
-		return 1
+	
+	if [[ ("${desired_status}" == *"${toolsOk}"*) ]]; then
+		desired_status="${toolsOk}|${toolsOld}"
 	fi
 
-	# if [[ ${toolStatus} == "toolsOld" ]]; then
-	# 	writeErr "Update VMware tools versio on VM at path ${vm_ipath} before contimuing"
-	# 	return 1
-	# fi
-	
-	# if [[ ${toolStatus} == "toolsNotInstalled" ]]; then
-	# 	writeErr "VMware tools are not insalled on VM at path ${vm_ipath}"
-	# 	return 1
-	# fi
-
+	echo "Waiting for a tool status of ${desired_status}"
 	echo -ne "|"
 
 	set +e #turn "exit on error" off so we can catch the timeout
 	
-	timeout --foreground ${timeout} bash -c 'while [[ $(getToolsStatus "'${vm_ipath}'") != *"'${desired_status}'"* ]]; do if [[ $(getToolsStatus "'${vm_ipath}'") == *"toolsOld"* ]]; then exit 11; fi; if [[ $(getToolsStatus "'${vm_ipath}'") == *"toolsNotInstalled"* ]]; then exit 12; fi; echo -ne "."; sleep '${sleep_time}'; done'
-
-	if [[ $? == 11 ]]; then
-		echo ""
-		writeErr "Vmware tools are running an old version, please update to continue."
-		return 1
-	fi
-	
-	if [[ $? == 12 ]]; then
-		echo ""
-		writeErr "Vmware tools are not installed, please install to to continue."
-		return 1
-	fi
+	timeout --foreground ${timeout} bash -c 'while [[ ! $(getToolsStatus "'${vm_ipath}'") =~ ^('${desired_status}')$ ]]; do echo -ne "."; sleep '${sleep_time}'; done'
 
 	if [[ $? == 124 ]]; then
 		echo ""
-		writeErr "Timed out waiting for tool status"
+		writeErr "Timed out waiting for tool status of ${desired_status}. Last reported status was $(getToolsStatus ${vm_ipath})."
 		return 1
 	fi
 
 	set -e
 
 	echo "|"
+
+	return 0
+}
+
+######################################
+# Description:
+#
+# Arguments:
+#
+#######################################
+function validateToolsVersionStatus(){
+	local vm_ipath="${1}"
+	local vmware_tools_status=${2:-"${toolStatusCurrent}"}
+
+	if ! toolStatus=$(getToolsStatus "${vm_ipath}"); then
+		writeErr "Could not get tool status for VM at path ${vm_ipath}, ${toolStatus}"
+		return 1
+	fi
+
+	echo "Current tools status: ${toolStatus}"
+
+	if [[ "${toolStatus}" == *"${toolsNotInstalled}"* ]]; then
+		writeErr "VMware tools are not installed on VM at path ${vm_ipath}. If the VM has no public access to download tools, use the vmware-tools-uri var to provide an internal place to download from."
+		return 1
+	fi
+
+	#if the VM is not running, there is a chance no version status will be reported
+	#if [[ "${toolStatus}" == *"${toolsNotRunning}"* ]]; then
+	#	return 0
+	#fi
+
+	if ! toolVersionStatus=$(getToolsVersionStatus "${vm_ipath}"); then
+		writeErr "Could not get tool version status for VM at path ${vm_ipath}, ${toolVersionStatus}"
+		return 1
+	fi
+
+	echo "Current tools version status: ${toolVersionStatus}"
+
+	echo "vmware-tools-status setting: ${vmware_tools_status}"
+
+	if [[ "${toolVersionStatus}" != *"${guestToolsCurrent}"* ]]; then
+		if [[ ("${vmware_tools_status}" == *"${toolStatusCurrent}"*) && ("${toolVersionStatus}" == *"${guestToolsSupportedOld}"*) ]]; then
+			writeErr "Tools are installed but running an old version. Use the vmware-tools-uri var to provide up to date install or change the vmware-tools-status value."
+			return 1
+		elif [[ ("${vmware_tools_status}" == *"${toolsStatusSupported}"*) && ("${toolVersionStatus}" == *"${guestToolsSupportedOld}"*) ]]; then
+			echo "VMware tools are running an old version but still compatible with the ESXi host, continuing."
+		else
+			writeErr "VMware tools status is being reported in a bad state, no other details are available. Verify the version installed is compatible with the ESXi host it is on in vCenter."
+			return 1
+		fi
+	fi
 
 	return 0
 }
@@ -562,6 +626,7 @@ function validateAndPowerOn() {
 function validateAndPowerOff() {
 	local vm_ipath="${1}"
 	local timeout=${2:-30s}
+	local skip_toolstatus=${3:-0}
 
 	if ! powerState=$(getPowerState ${vm_ipath}); then
 		echo "${powerState}"
@@ -569,7 +634,7 @@ function validateAndPowerOff() {
 	fi
 
 	if [[ "${powerState}" == *"poweredOn"* ]]; then
-		if ! powerOffVM "${vm_ipath}" ${timeout}; then return 1; fi
+		if ! powerOffVM "${vm_ipath}" ${timeout} ${skip_toolstatus}; then return 1; fi
 	fi
 
 	return 0
@@ -706,7 +771,7 @@ function createVMwithISO() {
 
 	cmd="${GOVC_EXE} vm.create ${args} ${vm_name}" #finally add the VM name
 
-	echo ${cmd} #for reference
+	#echo ${cmd} #for reference
 	if ! eval ${cmd}; then
 		writeErr "Could not create VM ${vm_name}"
 		return 1

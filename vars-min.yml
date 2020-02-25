@@ -24,7 +24,6 @@ vcenter-host: "" #The DNS or IP address to vcenter server
 vcenter-username: "" #User to interact with vcenter server
 vcenter-password: "" #Password for vcenter user to work as
 vcenter-datacenter: "" #Vsphere datacenter name
-vcenter-ca-certs: 
 
 base-vm-name: "" #The name of the initial Windows VM created
 
@@ -60,3 +59,4 @@ windows-update-module-uri: '' #must be less than 250 chars
 vmware-tools-status: '' #current|supported
 windows-install-timeout: ''
 timeout: ''
+vcenter-ca-certs: ''

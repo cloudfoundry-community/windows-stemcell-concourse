@@ -29,7 +29,7 @@ vm_network=${vm_network:='VM Network'}
 vm_cpu=${vm_cpu:=4}
 vm_memory_mb=${vm_memory_mb:=8000}
 vm_resource_pool=${vm_resource_pool:=''}
-timeout=${timeout:=30s}
+timeout=${timeout:=1m}
 vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################

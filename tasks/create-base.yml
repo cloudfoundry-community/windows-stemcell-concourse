@@ -40,6 +40,7 @@ params:
   windows_update_module_uri: ((windows-update-module-uri))
 
   vmware_tools_status: ((vmware-tools-status))
+  windows_install_timeout: ((windows-install-timeout))
     
 run:
   path: pipeline-resources/tasks/create-base.sh

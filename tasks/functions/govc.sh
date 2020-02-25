@@ -610,7 +610,7 @@ function validateAndPowerOn() {
 		return 1
 	fi
 
-	if [[ ! ${powerState} == "poweredOn" ]]; then
+	if [[ ! ${powerState} == *"poweredOn"* ]]; then
 		if ! powerOnVM "${vm_ipath}" ${timeout} ${skip_toolstatus}; then return 1; fi
 	fi
 
@@ -633,7 +633,7 @@ function validateAndPowerOff() {
 		return 1
 	fi
 
-	if [[ "${powerState}" == *"poweredOn"* ]]; then
+	if [[ ! "${powerState}" == *"poweredOff"* ]]; then
 		if ! powerOffVM "${vm_ipath}" ${timeout} ${skip_toolstatus}; then return 1; fi
 	fi
 

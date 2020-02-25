@@ -15,5 +15,8 @@ params:
   vm_folder: ((vm-folder))
   admin_password: ((admin-password))
   
+  vmware_tools_status: ((vmware-tools-status))
+  timeout: ((timeout))
+  
 run:
   path: pipeline-resources/tasks/update-base.sh

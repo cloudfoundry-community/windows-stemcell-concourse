@@ -13,6 +13,9 @@ params:
   vcenter_ca_certs: ((vcenter-ca-certs))
 
   vm_folder: ((vm-folder))
+  
+  vmware_tools_status: ((vmware-tools-status))
+  timeout: ((timeout))
 
 outputs:
 - name: stemcell

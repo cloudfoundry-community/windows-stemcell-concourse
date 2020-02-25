@@ -71,4 +71,6 @@ language: ''
 product-key: ''
 vmware-tools-uri: ''
 windows-update-module-uri: ''
-vmware-tools-status: '' #current|supported
+vmware-tools-status: ''
+windows-install-timeout: ''
+timeout: ''

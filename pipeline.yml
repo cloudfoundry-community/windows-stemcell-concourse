@@ -83,6 +83,8 @@ vm-params: &vm-params
   disk_controller_type: ((disk-controller-type))
   iso_datastore: ((iso-datastore))
   iso_path_in_datastore: ((iso-path-in-datastore))
+  timeout: ((timeout))
+  vmware_tools_status: ((vmware-tools-status))
 
 os-params: &os-params
   operating_system_name: ((operating-system-name))
@@ -95,6 +97,7 @@ os-params: &os-params
   admin_password: ((admin-password))
   vmware_tools_uri: ((vmware-tools-uri))
   windows_update_module_uri: ((windows-update-module-uri))
+  windows_install_timeout: ((windows-install-timeout))
 
 ######################
 

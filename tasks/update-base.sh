@@ -24,7 +24,7 @@ THIS_FOLDER="$(dirname "${BASH_SOURCE[0]}")"
 #       Default optional
 #######################################
 vcenter_ca_certs=${vcenter_ca_certs:=''}
-timeout=${timeout:=1m}
+timeout=${timeout:=30s}
 vmware_tools_status=${vmware_tools_status:='current'}
 
 #######################################

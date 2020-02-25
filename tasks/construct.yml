@@ -17,5 +17,8 @@ params:
   ip_address: ((ip-address))
   admin_password: ((admin-password))
 
+  vmware_tools_status: ((vmware-tools-status))
+  timeout: ((timeout))
+
 run:
   path: pipeline-resources/tasks/construct.sh

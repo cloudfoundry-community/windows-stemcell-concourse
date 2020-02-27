@@ -69,6 +69,10 @@ function initializeGovc() {
 	# test that we have a good connection to vcenter
 	if ! ret=$(${GOVC_EXE} about); then
 		writeErr "could not connect to vcenter with provided info - ${ret}"
+		echo "Writing current GOVC environment vars:"
+		env | grep GOVC
+		echo "Writing current certificate:"
+		cat ${GOVC_TLS_CA_CERTS}
 		return 1;
 	fi
 

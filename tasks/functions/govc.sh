@@ -17,7 +17,7 @@
 #	vcenter_host
 #	vcenter_username
 #	vcenter_password
-#	vcenter_ca_certs
+#	vcenter_ca_cert
 #	govc_file_path
 # Returns:
 #	None
@@ -26,7 +26,7 @@ function initializeGovc() {
 	local vcenter_host="${1}"
 	local vcenter_username="${2}"
 	local vcenter_password="${3}"
-	local vcenter_ca_certs="${4}"
+	local vcenter_ca_cert="${4}"
 	local vcenter_datacenter="${5}"
 
 	echo "Initializing govc"
@@ -36,14 +36,24 @@ function initializeGovc() {
 	export GOVC_USERNAME="${vcenter_username}"
 	export GOVC_PASSWORD="${vcenter_password}"
 	export GOVC_DATACENTER="${vcenter_datacenter}"
+	export GOVC_INSECURE=0
+	
+	if [[ -z "${vcenter_ca_cert}" ]]; then
+		echo "  Downloading vCenter certificate"
+		#export GOVC_INSECURE=1
+		if ! certPath=$(downloadVCCertificate "${vcenter_host}" 2>&1); then
+			echo "${certPath}"
+			writeErr "Tried to download vCenter certificate but failed"
+			return 1
+		fi
 
-	if [[ -n "${vcenter_ca_certs}" ]]; then
+		GOVC_TLS_CA_CERTS="$(pwd)/${certPath}"
+		export GOVC_TLS_CA_CERTS
+	else
+		echo "  Using provided certificate"
 		GOVC_TLS_CA_CERTS=$(mktemp)
 		export GOVC_TLS_CA_CERTS
-		export GOVC_INSECURE=0
-		cat <<< "${vcenter_ca_certs}" > "${GOVC_TLS_CA_CERTS}"
-	else
-		export GOVC_INSECURE=1
+		cat <<< "${vcenter_ca_cert}" > "${GOVC_TLS_CA_CERTS}"
 	fi
 
 	if [ -z "${GOVC_EXE}" ]; then
@@ -59,6 +69,10 @@ function initializeGovc() {
 	# test that we have a good connection to vcenter
 	if ! ret=$(${GOVC_EXE} about); then
 		writeErr "could not connect to vcenter with provided info - ${ret}"
+		echo "Writing current GOVC environment vars:"
+		env | grep GOVC
+		echo "Writing current certificate:"
+		cat ${GOVC_TLS_CA_CERTS}
 		return 1;
 	fi
 
@@ -76,6 +90,40 @@ function initializeGovc() {
 	return 0
 }
 
+######################################
+# Description: 
+#   Try to get the vcenter certificate by download.
+# Arguments:
+#    vcenter_host
+#######################################
+function downloadVCCertificate(){
+	local vcenter_host="${1}"
+
+	if ! curl -LOJks https://${vcenter_host}/certs/download.zip; then
+		writeErr "Could not retrieve vcenter certificate at https://${vcenter_host}/certs/download.zip"
+		return 1
+	fi
+
+	if ! unzip -qq download.zip; then
+		writeErr "Could not extract downloaded zip"
+		return 1
+	fi
+
+	if [[ ! -d "certs/lin" ]]; then
+		writeErr "Could not find linux certificate folder"
+		return 1
+	fi
+
+	if ! certs=( certs/lin/*.0 ); then
+		writeErr "Could not find a valid certificate"
+		return 1
+	fi
+	
+	#return first certificate found
+	echo "${certs[0]}"
+
+	return 0
+}
 ######################################
 # Description:
 #

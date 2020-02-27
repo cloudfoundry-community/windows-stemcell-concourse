@@ -109,7 +109,6 @@ os-params: &os-params
   windows_update_module_uri: ((windows-update-module-uri))
   windows_install_timeout: ((windows-install-timeout))
 
-
 ######################
 
 jobs:

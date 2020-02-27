@@ -41,6 +41,7 @@ admin-password: "" #The Windows administrator password of the base VM
 
 ###########################################
 #OPTIONAL PARAMS (yaml still has to have them but leave it blank)
+###########################################
 vm-resource-pool: ''
 vm-network: ''
 vm-cpu: ''
@@ -56,7 +57,7 @@ language: ''
 product-key: ''
 vmware-tools-uri: '' #must be less than 250 chars
 windows-update-module-uri: '' #must be less than 250 chars
-vmware-tools-status: '' #current|supported
+vmware-tools-status: ''
 windows-install-timeout: ''
 timeout: ''
 vcenter-ca-certs: ''

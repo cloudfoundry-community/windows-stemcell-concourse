@@ -20,6 +20,9 @@ params:
   vm_cpu: ((vm-cpu))
   vm_memory_mb: ((vm-memory-mb))
   vm_resource_pool: ((vm-resource-pool))
+  
+  vmware_tools_status: ((vmware-tools-status))
+  timeout: ((timeout))
 
   vmware_tools_status: ((vmware-tools-status))
   timeout: ((timeout))

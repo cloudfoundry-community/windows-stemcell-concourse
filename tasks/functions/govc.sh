@@ -42,7 +42,7 @@ function initializeGovc() {
 		echo "  Downloading vCenter certificate"
 		#export GOVC_INSECURE=1
 		if ! certPath=$(downloadVCCertificate "${vcenter_host}" 2>&1); then
-			echo "${vcenter_ca_cert}"
+			echo "${certPath}"
 			writeErr "Tried to download vCenter certificate but failed"
 			return 1
 		fi

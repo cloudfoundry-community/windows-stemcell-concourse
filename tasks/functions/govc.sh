@@ -99,7 +99,7 @@ function initializeGovc() {
 function downloadVCCertificate(){
 	local vcenter_host="${1}"
 
-	if ! curl -LOJk https://${vcenter_host}/certs/download.zip; then
+	if ! curl -LOJks https://${vcenter_host}/certs/download.zip; then
 		writeErr "Could not retrieve vcenter certificate at https://${vcenter_host}/certs/download.zip"
 		return 1
 	fi

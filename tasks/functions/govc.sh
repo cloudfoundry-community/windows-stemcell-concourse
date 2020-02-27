@@ -104,7 +104,7 @@ function downloadVCCertificate(){
 		return 1
 	fi
 
-	if ! unzip download.zip; then
+	if ! unzip -qq download.zip; then
 		writeErr "Could not extract downloaded zip"
 		return 1
 	fi

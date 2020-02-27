@@ -21,3 +21,28 @@ The new release of stembuild is the trigger of the pipeline. Specifically the `u
 There are two ways to watch for a new stembuild release. Pivotal customers can have concourse watch [Pivotal Stemcells product page](https://network.pivotal.io/products/stemcells-windows-server) for a new version, or non-Pivotal customers can have concourse watch the [GitHub> releases](https://github.com/cloudfoundry-incubator/stembuild/releases) for a new version. If you would like to make the pipeline run automatically when a new release is posted, uncomment `trigger: true` in the `update-base` task.
 
 More details about monthly stemcell upgrade can be found in the [creating vsphere stemcell with stembuild](https://docs.pivotal.io/pivotalcf/2-6/windows/create-vsphere-stemcell-automatically.html#upgrade-stemcell) documentation.
+
+## Change Log
+
+### 2/27/2020
+
+- Updated `cfcommunity/windows-stemcell-concourse` image with latest Ubuntu, added unzip package, and updated govc to 0.22.1.
+- Made `vcenter-ca-certs` optional and added ability to download certificate from vCenter as a part of initializing govc.
+
+### 2/25/2020
+
+- Added `timeout` var to apply to certain VM functions that could run wild.
+- Added `windows-install-timeout` var to apply to windows install that could run forever if the install gets in a bad state.
+
+### 2/24/2020
+
+- Added `vmware-tools-status` var to allow for 2 different vmware tools state - current and supported. Look at the [vars](https://github.com/cloudfoundry-community/windows-stemcell-concourse/wiki/Build-Variables) for more explaination.
+- Added validateToolsVersionStatus function in govc.sh to do a deeper lookup into the current state of the tools.
+- Built out waitForToolStatus in govc.sh to be patient and wait/timeout for a proper tools status.
+- Added support in all VM startup/shutdown/restart functions for waitForToolStatus
+
+### 2/20/2020
+
+- Added vmware tools validation in create-base task. The pipeline should not continue if tools are not in an acceptable state.
+
+For even more info have a look at [commit history](https://github.com/cloudfoundry-community/windows-stemcell-concourse/commits/master)

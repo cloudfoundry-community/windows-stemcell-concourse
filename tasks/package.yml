@@ -17,9 +17,6 @@ params:
   vmware_tools_status: ((vmware-tools-status))
   timeout: ((timeout))
 
-  vmware_tools_status: ((vmware-tools-status))
-  timeout: ((timeout))
-
 outputs:
 - name: stemcell
   
